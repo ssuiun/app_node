@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Business Service Platform — Единая система документов</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Serif:wght@600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="bsp-theme.css" />
+<style>
+  html,body{margin:0;padding:0}
+  .bsp-main{overflow:hidden}
+  .frame-area{flex:1;position:relative;display:none}
+  .frame-area.on{display:block}
+  .frame-wrap{position:absolute;inset:0;display:none;background:var(--bsp-cream)}
+  .frame-wrap.on{display:block}
+  .frame-wrap iframe{width:100%;height:100%;border:none;background:var(--bsp-cream)}
+  .loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:.6rem;color:var(--bsp-muted);font-size:.9rem;background:var(--bsp-cream)}
+  .spin{width:18px;height:18px;border:2.5px solid var(--bsp-border);border-top-color:var(--bsp-red-1);border-radius:50%;animation:sp .7s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .home-scroll{flex:1;overflow:auto}
+  .home-scroll.hidden{display:none}
+  .bsp-hero-quote{display:none}
+  @media(min-width:760px){.bsp-hero-quote{display:block}}
+</style>
+</head>
+<body>
+
+<div class="bsp-shell bsp-reset">
+
+  <aside class="bsp-sidebar">
+    <div class="bsp-logo">
+      <div class="sun">Ер</div>
+      <div>
+        <div class="name">BSP</div>
+        <div class="sub">Business Service Platform</div>
+        <div class="flag">Кыргызстан</div>
+      </div>
+    </div>
+
+    <nav class="bsp-nav" aria-label="Инструменты">
+      <a href="javascript:void(0)" id="nav-home" onclick="goHome()"><span class="ic">🏠</span>Главная</a>
+      <a href="javascript:void(0)" id="nav-akt" onclick="openTool('akt')"><span class="ic">📑</span>Акт приёма-передачи</a>
+      <a href="javascript:void(0)" id="nav-viz" onclick="openTool('viz')"><span class="ic">🛂</span>Визы и договоры</a>
+      <a href="javascript:void(0)" id="nav-kadr" onclick="openTool('kadr')"><span class="ic">👥</span>Кадровые приказы</a>
+      <a href="javascript:void(0)" id="nav-marg" onclick="openTool('marg')"><span class="ic">✅</span>Marginalia</a>
+    </nav>
+
+    <div class="bsp-sidebar-spacer"></div>
+
+    <div class="bsp-quote">
+      «Улук иштер кичине кадамдардан башталат.»
+      <span class="dash">— Кыргыз накыл сөзү</span>
+    </div>
+
+    <div class="bsp-user">
+      <div class="av">S</div>
+      <div>
+        <div class="name">Sui</div>
+        <div class="role">Business Service Platform</div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="bsp-main">
+    <div class="bsp-topbar">
+      <div class="bsp-search">🔍 Поиск по документам, задачам, инструментам… <kbd>⌘K</kbd></div>
+      <div class="bsp-top-actions">
+        <span class="dot">🔔</span>
+        <span>🌐 RU</span>
+        <div class="bsp-avatar-sm">S</div>
+      </div>
+    </div>
+    <div class="bsp-ornament"></div>
+
+    <div class="home-scroll" id="home-view">
+      <div class="bsp-hero">
+        <div class="bsp-hero-art" aria-hidden="true">
+          <svg viewBox="0 0 900 260" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMaxYMax slice" style="width:100%;height:100%">
+            <defs>
+              <linearGradient id="mtA" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#c98a4f"/><stop offset="100%" stop-color="#a5642f"/></linearGradient>
+              <linearGradient id="mtB" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#8c4a2a"/><stop offset="100%" stop-color="#6e3520"/></linearGradient>
+            </defs>
+            <circle cx="760" cy="70" r="46" fill="#fff3d6" opacity=".55"/>
+            <circle cx="760" cy="70" r="30" fill="#fdeec0"/>
+            <path d="M420 260 L560 90 L640 180 L720 60 L900 260 Z" fill="url(#mtA)" opacity=".85"/>
+            <path d="M300 260 L470 60 L610 230 L760 40 L900 260 Z" fill="url(#mtB)" opacity=".9"/>
+            <g transform="translate(560,175)">
+              <path d="M0 70 L0 30 Q40 -14 80 30 L80 70 Z" fill="#3a2115"/>
+              <path d="M-8 30 Q40 -22 88 30" fill="none" stroke="#c9922f" stroke-width="3"/>
+              <rect x="30" y="42" width="20" height="28" fill="#241206"/>
+              <rect x="-10" y="66" width="100" height="6" fill="#241206"/>
+            </g>
+            <path d="M645 70 L649 22 L653 70" stroke="#3a2115" stroke-width="2" fill="none"/>
+            <g transform="translate(647,18)"><path d="M0 0 L18 5 L0 10 Z" fill="#9c1a22"/></g>
+          </svg>
+        </div>
+        <div class="bsp-hero-quote">
+          «Бийик максаттар так пландан башталат.»
+          <span class="dash">— Кыргыз элинин накыл сөзү</span>
+        </div>
+        <div class="hero-copy">
+          <h1>Большие дела<br><span class="hl">начинаются здесь</span></h1>
+          <p>Единая система документов для вашего удобства — акты, визы, кадровые приказы и личные задачи в одном окне.</p>
+          <div class="hero-badges">
+            <span>🛡️ Надёжно</span>
+            <span>⚡ Удобно</span>
+            <span>📈 Современно</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bsp-content">
+        <div class="bsp-grid-4">
+          <div class="bsp-tool-card" onclick="openTool('akt')">
+            <div class="icon" style="background:linear-gradient(135deg,#c62330,#9c1a22)">📑</div>
+            <div class="title">Акт приёма-передачи</div>
+            <div class="desc">Создание и заполнение актов документов</div>
+            <div class="go">Открыть →</div>
+          </div>
+          <div class="bsp-tool-card" onclick="openTool('viz')">
+            <div class="icon" style="background:linear-gradient(135deg,var(--bsp-gold-soft),var(--bsp-gold-deep))">🛂</div>
+            <div class="title">Визы и договоры</div>
+            <div class="desc">Заявления, обязательства, трудовые договоры</div>
+            <div class="go">Открыть →</div>
+          </div>
+          <div class="bsp-tool-card" onclick="openTool('kadr')">
+            <div class="icon" style="background:linear-gradient(135deg,#7a3a20,#4a2410)">👥</div>
+            <div class="title">Кадровые приказы</div>
+            <div class="desc">Приём, увольнение и кадровые документы</div>
+            <div class="go">Открыть →</div>
+          </div>
+          <div class="bsp-tool-card" onclick="openTool('marg')">
+            <div class="icon" style="background:linear-gradient(135deg,#2e7d5b,#1e5a40)">✅</div>
+            <div class="title">Marginalia</div>
+            <div class="desc">Личный список задач с комментариями и дедлайнами</div>
+            <div class="go">Открыть →</div>
+          </div>
+        </div>
+
+        <div class="bsp-panel">
+          <h3>💡 Как это работает</h3>
+          <p style="margin:0;color:var(--bsp-ink-soft);font-size:.88rem;line-height:1.6">
+            Выберите инструмент в меню слева или на карточке выше. Все программы открываются в этом же окне —
+            переключайтесь между ними в любой момент, не теряя введённые данные.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <main class="frame-area" id="frame-area">
+      <div class="frame-wrap" id="wrap-akt">
+        <div class="loading" id="load-akt"><div class="spin"></div>Загрузка…</div>
+        <iframe id="frame-akt" title="Акт приёма-передачи документов"></iframe>
+      </div>
+      <div class="frame-wrap" id="wrap-viz">
+        <div class="loading" id="load-viz"><div class="spin"></div>Загрузка…</div>
+        <iframe id="frame-viz" title="Визы и договоры"></iframe>
+      </div>
+      <div class="frame-wrap" id="wrap-kadr">
+        <div class="loading" id="load-kadr"><div class="spin"></div>Загрузка…</div>
+        <iframe id="frame-kadr" title="Кадровые приказы"></iframe>
+      </div>
+      <div class="frame-wrap" id="wrap-marg">
+        <div class="loading" id="load-marg"><div class="spin"></div>Загрузка…</div>
+        <iframe id="frame-marg" title="Marginalia"></iframe>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+  var SRC = { akt:'akt.html', viz:'visa.html', kadr:'kadr.html', marg:'marginalia.html' };
+  var loaded = { akt:false, viz:false, kadr:false, marg:false };
+  var NAVS = ['home','akt','viz','kadr','marg'];
+
+  function setActiveNav(key){
+    NAVS.forEach(function(k){
+      var el = document.getElementById('nav-'+k);
+      if (el) el.classList.toggle('active', k===key);
+    });
+  }
+
+  function goHome(){
+    document.getElementById('home-view').classList.remove('hidden');
+    document.getElementById('frame-area').classList.remove('on');
+    setActiveNav('home');
+    try { history.replaceState(null, '', '#home'); } catch(e){}
+  }
+
+  function openTool(key){
+    if (!SRC[key]) return;
+    document.getElementById('home-view').classList.add('hidden');
+    document.getElementById('frame-area').classList.add('on');
+    ['akt','viz','kadr','marg'].forEach(function(k){
+      document.getElementById('wrap-'+k).classList.toggle('on', k===key);
+    });
+    setActiveNav(key);
+
+    if (!loaded[key]){
+      var f = document.getElementById('frame-'+key);
+      f.addEventListener('load', function onload(){
+        var l = document.getElementById('load-'+key);
+        if (l) l.style.display = 'none';
+        f.removeEventListener('load', onload);
+      });
+      f.src = SRC[key];
+      loaded[key] = true;
+    }
+    try { history.replaceState(null, '', '#' + key); } catch(e){}
+  }
+
+  (function initFromHash(){
+    var h = (location.hash || '').replace('#','');
+    if (SRC[h]) { openTool(h); } else { goHome(); }
+  })();
+</script>
+
+</body>
+</html>

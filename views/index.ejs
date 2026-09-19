@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Business Service Platform — Единая система документов</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Serif:wght@600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="bsp-theme.css" />
+<style>
+  html,body{margin:0;padding:0}
+  .bsp-main{overflow:hidden}
+  .frame-area{flex:1;position:relative;display:none}
+  .frame-area.on{display:block}
+  .frame-wrap{position:absolute;inset:0;display:none;background:var(--bsp-cream)}
+  .frame-wrap.on{display:block}
+  .frame-wrap iframe{width:100%;height:100%;border:none;background:var(--bsp-cream)}
+  .loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:.6rem;color:var(--bsp-muted);font-size:.9rem;background:var(--bsp-cream)}
+  .spin{width:18px;height:18px;border:2.5px solid var(--bsp-border);border-top-color:var(--bsp-red-1);border-radius:50%;animation:sp .7s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .home-scroll{flex:1;overflow:auto}
+  .home-scroll.hidden{display:none}
+  .bsp-hero-quote{display:none}
+  @media(min-width:760px){.bsp-hero-quote{display:block}}
+  .bsp-logo-spacer{height:150px}
+  @media (max-width:900px){.bsp-logo-spacer{display:none}}
+
+  .bsp-mini-cal{display:flex;flex-direction:column;gap:.7rem}
+  .bsp-mini-cal .mc-head{display:flex;align-items:center;justify-content:space-between}
+  .bsp-mini-cal .mc-head .mc-title{font-weight:700;font-size:.92rem;text-transform:capitalize}
+  .bsp-mini-cal .mc-nav{display:flex;gap:.3rem}
+  .bsp-mini-cal .mc-nav button{
+    width:24px;height:24px;border:1px solid var(--bsp-border);background:var(--bsp-cream-2);border-radius:6px;
+    cursor:pointer;color:var(--bsp-ink-soft);font-size:.8rem;line-height:1;display:flex;align-items:center;justify-content:center;
+  }
+  .bsp-mini-cal .mc-nav button:hover{background:var(--bsp-border)}
+  .bsp-mini-cal .mc-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center}
+  .bsp-mini-cal .mc-dow{font-size:.65rem;color:var(--bsp-muted);font-weight:700;padding:.2rem 0;text-transform:uppercase}
+  .bsp-mini-cal .mc-day{font-size:.78rem;padding:.4rem 0;border-radius:7px;color:var(--bsp-ink-soft)}
+  .bsp-mini-cal .mc-day.mc-muted{color:var(--bsp-border)}
+  .bsp-mini-cal .mc-day.mc-today{background:var(--bsp-red-1);color:#fff;font-weight:700}
+</style>
+</head>
+<body>
+
+<div class="bsp-shell bsp-reset">
+
+  <aside class="bsp-sidebar">
+    <div class="bsp-logo-spacer" aria-hidden="true"></div>
+
+    <nav class="bsp-nav" aria-label="Инструменты">
+      <a href="javascript:void(0)" id="nav-home" onclick="goHome()"><span class="ic">🏠</span>Главная</a>
+      <a href="javascript:void(0)" id="nav-akt" onclick="openTool('akt')"><span class="ic">📑</span>Акт приёма-передачи</a>
+      <a href="javascript:void(0)" id="nav-viz" onclick="openTool('viz')"><span class="ic">🛂</span>Визы и договоры</a>
+      <a href="javascript:void(0)" id="nav-kadr" onclick="openTool('kadr')"><span class="ic">👥</span>Кадровые приказы</a>
+      <a href="javascript:void(0)" id="nav-marg" onclick="openTool('marg')"><span class="ic">✅</span>Marginalia</a>
+    </nav>
+
+    <div class="bsp-sidebar-spacer"></div>
+
+    <div class="bsp-quote">
+      «Улук иштер кичине кадамдардан башталат.»
+      <span class="dash">— Кыргыз накыл сөзү</span>
+    </div>
+
+    <div class="bsp-user">
+      <div class="av">S</div>
+      <div>
+        <div class="name">Sui</div>
+        <div class="role">Business Service Platform</div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="bsp-main">
+    <div class="bsp-topbar">
+      <div class="bsp-top-actions">
+        <span class="dot">🔔</span>
+        <span>🌐 RU</span>
+        <div class="bsp-avatar-sm">S</div>
+      </div>
+    </div>
+    <div class="bsp-ornament"></div>
+
+    <div class="home-scroll" id="home-view">
+      <div class="bsp-hero bsp-hero-photo" style="background-image:linear-gradient(100deg, rgba(35,15,10,.86) 0%, rgba(35,15,10,.55) 38%, rgba(35,15,10,.08) 68%), url('assets/img/hero-kyrgyzstan.jpg')">
+        <div class="hero-copy">
+          <h1>Большие дела<br><span class="hl">начинаются здесь</span></h1>
+          <p>Единая система документов для вашего удобства — акты, визы, кадровые приказы и личные задачи в одном окне.</p>
+          <div class="hero-badges">
+            <span>🛡️ Надёжно</span>
+            <span>⚡ Удобно</span>
+            <span>📈 Современно</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bsp-content">
+        <div class="bsp-grid-4">
+          <div class="bsp-tool-card" onclick="openTool('akt')">
+            <div class="icon" style="background:linear-gradient(135deg,#c62330,#9c1a22)">📑</div>
+            <div class="title">Акт приёма-передачи</div>
+            <div class="desc">Создание и заполнение актов документов</div>
+            <div class="go">Открыть →</div>
+          </div>
+          <div class="bsp-tool-card" onclick="openTool('viz')">
+            <div class="icon" style="background:linear-gradient(135deg,var(--bsp-gold-soft),var(--bsp-gold-deep))">🛂</div>
+            <div class="title">Визы и договоры</div>
+            <div class="desc">Заявления, обязательства, трудовые договоры</div>
+            <div class="go">Открыть →</div>
+          </div>
+          <div class="bsp-tool-card" onclick="openTool('kadr')">
+            <div class="icon" style="background:linear-gradient(135deg,#7a3a20,#4a2410)">👥</div>
+            <div class="title">Кадровые приказы</div>
+            <div class="desc">Приём, увольнение и кадровые документы</div>
+            <div class="go">Открыть →</div>
+          </div>
+          <div class="bsp-tool-card" onclick="openTool('marg')">
+            <div class="icon" style="background:linear-gradient(135deg,#2e7d5b,#1e5a40)">✅</div>
+            <div class="title">Marginalia</div>
+            <div class="desc">Личный список задач с комментариями и дедлайнами</div>
+            <div class="go">Открыть →</div>
+          </div>
+        </div>
+
+        <div class="bsp-two-col">
+          <div class="bsp-panel">
+            <h3>💡 Как это работает</h3>
+            <p style="margin:0;color:var(--bsp-ink-soft);font-size:.88rem;line-height:1.6">
+              Выберите инструмент в меню слева или на карточке выше. Все программы открываются в этом же окне —
+              переключайтесь между ними в любой момент, не теряя введённые данные.
+            </p>
+          </div>
+
+          <div class="bsp-panel bsp-mini-cal" id="mini-cal">
+            <div class="mc-head">
+              <span class="mc-title">📅 <span id="mc-title-text"></span></span>
+              <div class="mc-nav">
+                <button type="button" onclick="miniCalShift(-1)" aria-label="Предыдущий месяц">‹</button>
+                <button type="button" onclick="miniCalShift(1)" aria-label="Следующий месяц">›</button>
+              </div>
+            </div>
+            <div class="mc-grid" id="mc-grid"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <main class="frame-area" id="frame-area">
+      <div class="frame-wrap" id="wrap-akt">
+        <div class="loading" id="load-akt"><div class="spin"></div>Загрузка…</div>
+        <iframe id="frame-akt" title="Акт приёма-передачи документов"></iframe>
+      </div>
+      <div class="frame-wrap" id="wrap-viz">
+        <div class="loading" id="load-viz"><div class="spin"></div>Загрузка…</div>
+        <iframe id="frame-viz" title="Визы и договоры"></iframe>
+      </div>
+      <div class="frame-wrap" id="wrap-kadr">
+        <div class="loading" id="load-kadr"><div class="spin"></div>Загрузка…</div>
+        <iframe id="frame-kadr" title="Кадровые приказы"></iframe>
+      </div>
+      <div class="frame-wrap" id="wrap-marg">
+        <div class="loading" id="load-marg"><div class="spin"></div>Загрузка…</div>
+        <iframe id="frame-marg" title="Marginalia"></iframe>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+  var SRC = { akt:'akt.html', viz:'visa.html', kadr:'kadr.html', marg:'marginalia.html' };
+  var loaded = { akt:false, viz:false, kadr:false, marg:false };
+  var NAVS = ['home','akt','viz','kadr','marg'];
+
+  function setActiveNav(key){
+    NAVS.forEach(function(k){
+      var el = document.getElementById('nav-'+k);
+      if (el) el.classList.toggle('active', k===key);
+    });
+  }
+
+  function goHome(){
+    document.getElementById('home-view').classList.remove('hidden');
+    document.getElementById('frame-area').classList.remove('on');
+    setActiveNav('home');
+    try { history.replaceState(null, '', '#home'); } catch(e){}
+  }
+
+  function openTool(key){
+    if (!SRC[key]) return;
+    document.getElementById('home-view').classList.add('hidden');
+    document.getElementById('frame-area').classList.add('on');
+    ['akt','viz','kadr','marg'].forEach(function(k){
+      document.getElementById('wrap-'+k).classList.toggle('on', k===key);
+    });
+    setActiveNav(key);
+
+    if (!loaded[key]){
+      var f = document.getElementById('frame-'+key);
+      f.addEventListener('load', function onload(){
+        var l = document.getElementById('load-'+key);
+        if (l) l.style.display = 'none';
+        f.removeEventListener('load', onload);
+      });
+      f.src = SRC[key];
+      loaded[key] = true;
+    }
+    try { history.replaceState(null, '', '#' + key); } catch(e){}
+  }
+
+  (function initFromHash(){
+    var h = (location.hash || '').replace('#','');
+    if (SRC[h]) { openTool(h); } else { goHome(); }
+  })();
+
+  /* ---- Mini calendar ---- */
+  var MC_DOW = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+  var MC_MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+  var today = new Date();
+  var mcYear = today.getFullYear(), mcMonth = today.getMonth();
+
+  function miniCalShift(delta){
+    mcMonth += delta;
+    if (mcMonth < 0) { mcMonth = 11; mcYear--; }
+    if (mcMonth > 11) { mcMonth = 0; mcYear++; }
+    renderMiniCal();
+  }
+
+  function renderMiniCal(){
+    var titleEl = document.getElementById('mc-title-text');
+    var gridEl = document.getElementById('mc-grid');
+    if (!titleEl || !gridEl) return;
+    titleEl.textContent = MC_MONTHS[mcMonth] + ' ' + mcYear;
+
+    var html = MC_DOW.map(function(d){ return '<div class="mc-dow">' + d + '</div>'; }).join('');
+
+    var firstDay = new Date(mcYear, mcMonth, 1);
+    var startOffset = (firstDay.getDay() + 6) % 7; // Monday = 0
+    var daysInMonth = new Date(mcYear, mcMonth + 1, 0).getDate();
+    var daysInPrevMonth = new Date(mcYear, mcMonth, 0).getDate();
+
+    for (var i = 0; i < startOffset; i++){
+      html += '<div class="mc-day mc-muted">' + (daysInPrevMonth - startOffset + i + 1) + '</div>';
+    }
+    for (var d2 = 1; d2 <= daysInMonth; d2++){
+      var isToday = (d2 === today.getDate() && mcMonth === today.getMonth() && mcYear === today.getFullYear());
+      html += '<div class="mc-day' + (isToday ? ' mc-today' : '') + '">' + d2 + '</div>';
+    }
+    var totalCells = startOffset + daysInMonth;
+    var trailing = (7 - (totalCells % 7)) % 7;
+    for (var d3 = 1; d3 <= trailing; d3++){
+      html += '<div class="mc-day mc-muted">' + d3 + '</div>';
+    }
+
+    gridEl.innerHTML = html;
+  }
+
+  renderMiniCal();
+</script>
+
+</body>
+</html>
