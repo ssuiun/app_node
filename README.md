@@ -22,3 +22,19 @@
 4. Не задавай порт вручную: сервер использует `process.env.PORT`.
 
 `/health` возвращает состояние приложения.
+
+## PDF-инструменты (Stirling-PDF через `/pdf`)
+
+Сайт проксирует путь `/pdf` на отдельный сервис Stirling-PDF (reverse proxy в `server.js`).
+
+1. В том же проекте Railway: **New → Docker Image** → `stirlingtools/stirling-pdf:latest`
+   (лучше закрепить конкретную версию).
+2. Переменные сервиса Stirling-PDF:
+   - `SYSTEM_ROOTURIPATH=/pdf`
+   - `LANGS=ru_RU` (по желанию)
+   - порт по умолчанию 8080; публичный домен для него создавать **не нужно**.
+3. В сервисе сайта (`SUKAAA`) добавь переменную:
+   - `STIRLING_URL=http://<имя-сервиса>.railway.internal:8080`
+4. Redeploy обоих сервисов. Страница: `/#pdf` или `/pdf/`.
+
+Если `STIRLING_URL` не задан, `/pdf` отключён.

@@ -55,6 +55,7 @@
       <a href="javascript:void(0)" id="nav-viz" onclick="openTool('viz')"><span class="ic">🛂</span>Визы и договоры</a>
       <a href="javascript:void(0)" id="nav-kadr" onclick="openTool('kadr')"><span class="ic">👥</span>Кадровые приказы</a>
       <a href="javascript:void(0)" id="nav-marg" onclick="openTool('marg')"><span class="ic">✅</span>Marginalia</a>
+      <a href="javascript:void(0)" id="nav-pdf" onclick="openTool('pdf')"><span class="ic">📄</span>PDF-инструменты</a>
     </nav>
 
     <div class="bsp-sidebar-spacer"></div>
@@ -113,6 +114,12 @@
             <div class="desc">Личный список задач с комментариями и дедлайнами</div>
             <div class="go">Открыть →</div>
           </div>
+          <div class="bsp-tool-card" onclick="openTool('pdf')">
+            <div class="icon" style="background:linear-gradient(135deg,#b3392f,#7a2020)">📄</div>
+            <div class="title">PDF-инструменты</div>
+            <div class="desc">Объединение, разделение, сжатие, конвертация и OCR PDF</div>
+            <div class="go">Открыть →</div>
+          </div>
         </div>
 
         <div class="bsp-two-col">
@@ -155,14 +162,18 @@
         <div class="loading" id="load-marg"><div class="spin"></div>Загрузка…</div>
         <iframe id="frame-marg" title="Marginalia"></iframe>
       </div>
+      <div class="frame-wrap" id="wrap-pdf">
+        <div class="loading" id="load-pdf"><div class="spin"></div>Загрузка…</div>
+        <iframe id="frame-pdf" title="PDF-инструменты"></iframe>
+      </div>
     </main>
   </div>
 </div>
 
 <script>
-  var SRC = { akt:'akt.html', viz:'visa.html', kadr:'kadr.html', marg:'marginalia.html' };
-  var loaded = { akt:false, viz:false, kadr:false, marg:false };
-  var NAVS = ['home','akt','viz','kadr','marg'];
+  var SRC = { akt:'akt.html', viz:'visa.html', kadr:'kadr.html', marg:'marginalia.html', pdf:'pdf/' };
+  var loaded = { akt:false, viz:false, kadr:false, marg:false, pdf:false };
+  var NAVS = ['home','akt','viz','kadr','marg','pdf'];
 
   function setActiveNav(key){
     NAVS.forEach(function(k){
@@ -182,7 +193,7 @@
     if (!SRC[key]) return;
     document.getElementById('home-view').classList.add('hidden');
     document.getElementById('frame-area').classList.add('on');
-    ['akt','viz','kadr','marg'].forEach(function(k){
+    ['akt','viz','kadr','marg','pdf'].forEach(function(k){
       document.getElementById('wrap-'+k).classList.toggle('on', k===key);
     });
     setActiveNav(key);
