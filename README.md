@@ -38,3 +38,10 @@
 4. Redeploy обоих сервисов. Страница: `/#pdf` или `/pdf/`.
 
 Если `STIRLING_URL` не задан, `/pdf` отключён.
+
+### OCR на русском и кыргызском
+
+В стандартном образе нет русского словаря Tesseract. Папка `stirling/` содержит Dockerfile,
+который добавляет `rus` и `kir`. В Railway у сервиса `stirling-pdf`:
+**Settings → Source** → подключить репозиторий `app_node`, **Root Directory** = `/stirling`.
+Переменные сервиса (`PORT`, `SYSTEM_ROOTURIPATH`, `SYSTEM_DEFAULTLOCALE` и др.) сохраняются.
