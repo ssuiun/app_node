@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const { Pool } = require('pg');
+const { createProxyMiddleware } = require('http-proxy-middleware');
 
 const PORT = Number(process.env.PORT || 3000);
 const HOST = '0.0.0.0';
@@ -31,6 +32,36 @@ const app = express();
 app.set('view engine', 'ejs');
 app.set('views', path.join(ROOT, 'views'));
 app.disable('x-powered-by');
+
+// ---------- /pdf -> Stirling-PDF (separate Railway service) ----------
+// Must stay before express.json() so uploaded files are streamed through untouched.
+// Stirling-PDF must run with SYSTEM_ROOTURIPATH=/pdf so its links include the prefix.
+const STIRLING_URL = process.env.STIRLING_URL;
+if (STIRLING_URL) {
+  app.use(createProxyMiddleware({
+    target: STIRLING_URL,
+    pathFilter: '/pdf',
+    changeOrigin: true,
+    proxyTimeout: 10 * 60 * 1000,
+    timeout: 10 * 60 * 1000,
+    on: {
+      proxyRes(proxyRes) {
+        // Allow embedding in our own iframe (same origin) only.
+        delete proxyRes.headers['x-frame-options'];
+        proxyRes.headers['content-security-policy'] = "frame-ancestors 'self'";
+      },
+      error(err, req, res) {
+        console.error('Stirling-PDF proxy error:', err.message);
+        if (res && typeof res.writeHead === 'function' && !res.headersSent) {
+          res.writeHead(502, { 'Content-Type': 'text/plain; charset=utf-8' });
+          res.end('PDF-сервис недоступен');
+        }
+      }
+    }
+  }));
+} else {
+  console.warn('STIRLING_URL is not set. /pdf is disabled.');
+}
 
 app.use(express.json({ limit: MAX_BODY }));
 
