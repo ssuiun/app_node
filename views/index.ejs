@@ -23,6 +23,13 @@
   .home-scroll.hidden{display:none}
   .bsp-hero-quote{display:none}
   @media(min-width:760px){.bsp-hero-quote{display:block}}
+  .sb-toggle{position:fixed;top:50%;left:var(--bsp-sidebar-w);transform:translateY(-50%);z-index:50;width:20px;height:64px;padding:0;
+    border:1px solid var(--bsp-border);border-left:none;border-radius:0 10px 10px 0;background:var(--bsp-cream);color:var(--bsp-ink-soft);
+    font-size:.9rem;line-height:1;cursor:pointer;box-shadow:2px 0 8px rgba(0,0,0,.18)}
+  .sb-toggle:hover{background:var(--bsp-cream-2);color:var(--bsp-red-1)}
+  .bsp-shell.sb-collapsed .bsp-sidebar{display:none}
+  .bsp-shell.sb-collapsed .sb-toggle{left:0}
+  @media (max-width:900px){.sb-toggle{display:none}}
   .bsp-logo-spacer{height:150px}
   @media (max-width:900px){.bsp-logo-spacer{display:none}}
 
@@ -73,6 +80,8 @@
       </div>
     </div>
   </aside>
+
+  <button type="button" class="sb-toggle" id="sb-toggle" onclick="toggleSidebar()" aria-label="Скрыть боковую панель" title="Скрыть/показать боковую панель">‹</button>
 
   <div class="bsp-main">
     <div class="home-scroll" id="home-view">
@@ -174,6 +183,17 @@
   var SRC = { akt:'akt.html', viz:'visa.html', kadr:'kadr.html', marg:'marginalia.html', pdf:'pdf/' };
   var loaded = { akt:false, viz:false, kadr:false, marg:false, pdf:false };
   var NAVS = ['home','akt','viz','kadr','marg','pdf'];
+
+  function toggleSidebar(force){
+    var shell = document.querySelector('.bsp-shell');
+    var collapsed = typeof force === 'boolean' ? force : !shell.classList.contains('sb-collapsed');
+    shell.classList.toggle('sb-collapsed', collapsed);
+    var b = document.getElementById('sb-toggle');
+    b.textContent = collapsed ? '›' : '‹';
+    b.setAttribute('aria-label', collapsed ? 'Показать боковую панель' : 'Скрыть боковую панель');
+    try { localStorage.setItem('bsp_sidebar_collapsed', collapsed ? '1' : '0'); } catch(e){}
+  }
+  try { if (localStorage.getItem('bsp_sidebar_collapsed') === '1') toggleSidebar(true); } catch(e){}
 
   function setActiveNav(key){
     NAVS.forEach(function(k){
