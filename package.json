@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "test:outgoing": "node --test test/outgoing.test.js",
-    "build:agentation": "esbuild src/agentation-entry.jsx --bundle --minify --format=iife --jsx=automatic --define:process.env.NODE_ENV=\\\"production\\\" --outfile=public/vendor/agentation.js"
+    "build:agentation": "esbuild src/agentation-entry.jsx --bundle --minify --format=iife --jsx=automatic --define:process.env.NODE_ENV=\\\"production\\\" --outfile=public/vendor/agentation.js",
+    "dev": "node --env-file=.env server.js"
   },
   "dependencies": {
     "ejs": "^3.1.10",

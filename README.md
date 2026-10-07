@@ -62,3 +62,18 @@
 Тулбар [Agentation](https://agentation.com): кликаете по элементу страницы, пишете замечание и копируете готовый текст для ИИ-агента (с селекторами элементов).
 Включается переменной окружения `AGENTATION=1` (по умолчанию выключен; на Railway добавляйте только если нужен). Тулбар появляется справа внизу.
 Пересборка бандла после обновления пакета: `npm run build:agentation` (результат — `public/vendor/agentation.js`, лежит в репозитории).
+
+## Локальный запуск (localhost)
+
+Нужны Node.js 20+ и Docker (для PostgreSQL).
+
+```
+git checkout claude/lucid-dirac-q2acjl
+npm install
+docker compose up -d        # база PostgreSQL на localhost:5432
+cp .env.example .env        # настройки (DATABASE_URL, AGENTATION)
+npm run dev
+```
+
+Сайт: http://localhost:3000 — раздел «Исходящие номера»: http://localhost:3000/#out
+Без Docker можно указать в `.env` любую свою PostgreSQL-базу в `DATABASE_URL`.
