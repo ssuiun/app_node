@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Исходящие номера</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Serif:wght@600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="bsp-theme.css" />
+<style>
+  *,*::before,*::after{box-sizing:border-box}
+  body{margin:0;background:var(--bsp-cream);color:var(--bsp-ink);font-family:var(--bsp-font-body);line-height:1.5}
+  .wrap{max-width:1280px;margin:0 auto;padding:1.5rem}
+  h1{font-family:var(--bsp-font-display);font-size:1.6rem;margin:0 0 .2rem}
+  .lead{color:var(--bsp-muted);font-size:.88rem;margin:0 0 1.3rem}
+  .grid{display:grid;grid-template-columns:380px 1fr;gap:1.2rem;align-items:start}
+  @media(max-width:960px){.grid{grid-template-columns:1fr}}
+  .panel{background:var(--bsp-paper);border:1px solid var(--bsp-border);border-radius:var(--bsp-radius);padding:1.1rem 1.2rem;margin-bottom:1.2rem}
+  .panel h2{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:var(--bsp-muted);margin:0 0 .8rem;font-weight:700}
+  label{display:block;font-size:.78rem;font-weight:600;color:var(--bsp-ink-soft);margin:.7rem 0 .25rem}
+  input,select,textarea{width:100%;padding:.55rem .7rem;border:1px solid var(--bsp-border);border-radius:var(--bsp-radius-sm);background:#fff;color:var(--bsp-ink);font:inherit;font-size:.88rem}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--bsp-gold);outline-offset:1px}
+  textarea{resize:vertical;min-height:54px}
+  .row{display:flex;gap:.6rem}.row>*{flex:1}
+  .check{display:flex;align-items:center;gap:.5rem;font-weight:500;margin-top:.8rem}
+  .check input{width:auto}
+  .btn{border:none;border-radius:var(--bsp-radius-sm);padding:.6rem 1.1rem;font:inherit;font-size:.88rem;font-weight:700;cursor:pointer;
+    background:linear-gradient(135deg,var(--bsp-red-1),var(--bsp-red-2));color:#fff}
+  .btn:hover{filter:brightness(1.1)}.btn:disabled{opacity:.5;cursor:default}
+  .btn.ghost{background:var(--bsp-paper);color:var(--bsp-ink);border:1px solid var(--bsp-border)}
+  .btn.sm{padding:.25rem .6rem;font-size:.76rem}
+  .btn.block{width:100%;margin-top:1rem}
+  .next{background:var(--bsp-cream-2);border:1px dashed var(--bsp-gold);border-radius:var(--bsp-radius-sm);padding:.7rem 1rem;margin-top:.8rem;text-align:center}
+  .next small{display:block;color:var(--bsp-muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.08em}
+  .next b{font-family:var(--bsp-font-display);font-size:2rem;color:var(--bsp-red-1);font-variant-numeric:tabular-nums}
+  .got{background:#e8f4ee;border:1px solid var(--bsp-accent-green);border-radius:var(--bsp-radius-sm);padding:.8rem 1rem;margin-top:1rem;display:none}
+  .got.on{display:block}
+  .got .big{font-family:var(--bsp-font-display);font-size:1.5rem;font-weight:700;color:var(--bsp-accent-green)}
+  .err{color:#a11;font-size:.82rem;margin-top:.6rem;min-height:1em}
+  .co{display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:.55rem 0;border-top:1px solid var(--bsp-border);font-size:.86rem}
+  .co:first-of-type{border-top:none}
+  .co .nm{font-weight:600}.co .meta{color:var(--bsp-muted);font-size:.76rem}
+  .co.arch{opacity:.55}
+  .co .last{font-variant-numeric:tabular-nums;font-weight:700;color:var(--bsp-red-1);white-space:nowrap}
+  .filters{display:grid;grid-template-columns:2fr 1.4fr 1fr 1fr auto;gap:.5rem;margin-bottom:.9rem}
+  @media(max-width:1100px){.filters{grid-template-columns:1fr 1fr}}
+  .tbl-wrap{overflow:auto}
+  table{width:100%;border-collapse:collapse;font-size:.84rem}
+  th{text-align:left;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--bsp-muted);padding:.4rem .5rem;border-bottom:2px solid var(--bsp-border);white-space:nowrap}
+  td{padding:.5rem;border-bottom:1px solid var(--bsp-border);vertical-align:top}
+  td.num{font-weight:800;color:var(--bsp-red-1);white-space:nowrap;font-variant-numeric:tabular-nums}
+  tr.void td{color:var(--bsp-muted);text-decoration:line-through}
+  tr.void td.act,tr.void td.num{text-decoration:none}
+  tr.void td.num::after{content:' аннулировано';font-size:.68rem;font-weight:600;color:#a11}
+  .sub{color:var(--bsp-muted);font-size:.76rem}
+  td.act{white-space:nowrap}
+  .pager{display:flex;align-items:center;justify-content:space-between;margin-top:.8rem;font-size:.82rem;color:var(--bsp-muted)}
+  .empty{padding:1.5rem;text-align:center;color:var(--bsp-muted)}
+  dialog{border:1px solid var(--bsp-border);border-radius:var(--bsp-radius);padding:1.2rem;width:min(460px,92vw);background:var(--bsp-paper);color:var(--bsp-ink)}
+  dialog::backdrop{background:rgba(30,10,8,.45)}
+  dialog h3{margin:0 0 .4rem;font-family:var(--bsp-font-display)}
+  .dlg-actions{display:flex;justify-content:flex-end;gap:.5rem;margin-top:1rem}
+  .hint{color:var(--bsp-muted);font-size:.74rem;margin-top:.25rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>📨 Исходящие номера</h1>
+  <p class="lead">Выберите компанию — система сама выдаст следующий номер и запишет письмо в журнал. Нумерация у каждой компании своя и не пересекается.</p>
+
+  <div class="grid">
+    <div>
+      <section class="panel">
+        <h2>Получить номер</h2>
+        <label for="f-company">Компания</label>
+        <select id="f-company"></select>
+        <div class="next" id="next-box"><small>Следующий номер</small><b id="next-num">—</b><span class="sub" id="next-last"></span></div>
+
+        <label for="f-date">Дата письма</label>
+        <input type="date" id="f-date" />
+        <label for="f-recipient">Кому (адресат)</label>
+        <input id="f-recipient" maxlength="300" placeholder="Например: Министерство юстиции КР" />
+        <label for="f-subject">Тема / краткое содержание</label>
+        <textarea id="f-subject" maxlength="1000"></textarea>
+        <div class="row">
+          <div><label for="f-author">Исполнитель</label><input id="f-author" maxlength="200" /></div>
+        </div>
+        <label for="f-note">Примечание</label>
+        <input id="f-note" maxlength="2000" />
+        <button class="btn block" id="btn-take">Получить исходящий номер</button>
+        <div class="err" id="take-err" role="alert"></div>
+        <div class="got" id="got">
+          <div class="sub">Номер закреплён за вами</div>
+          <div class="big" id="got-num"></div>
+          <div class="sub" id="got-meta"></div>
+          <button class="btn ghost sm" id="btn-copy" style="margin-top:.5rem">Копировать «Исх. № … от …»</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Компании</h2>
+        <div id="companies"></div>
+        <button class="btn ghost sm" id="btn-add-co" style="margin-top:.6rem">+ Добавить компанию</button>
+      </section>
+    </div>
+
+    <section class="panel">
+      <h2>Журнал исходящих</h2>
+      <div class="filters">
+        <input id="q" type="search" placeholder="Поиск: номер, адресат, тема…" />
+        <select id="flt-company"></select>
+        <select id="flt-year"></select>
+        <select id="flt-status">
+          <option value="">Все</option><option value="active">Действующие</option><option value="void">Аннулированные</option>
+        </select>
+        <a class="btn ghost" id="btn-csv" style="text-align:center;text-decoration:none">⬇ Excel</a>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>№</th><th>Дата</th><th>Компания</th><th>Кому / тема</th><th>Исполнитель</th><th></th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <div class="empty" id="empty" hidden>Писем пока нет</div>
+      <div class="pager"><span id="pager-info"></span><span><button class="btn ghost sm" id="pg-prev">‹</button> <button class="btn ghost sm" id="pg-next">›</button></span></div>
+    </section>
+  </div>
+</div>
+
+<dialog id="dlg-co">
+  <h3>Новая компания</h3>
+  <form method="dialog" id="co-form">
+    <label for="c-name">Название</label>
+    <input id="c-name" maxlength="200" required />
+    <div class="row">
+      <div><label for="c-prefix">Префикс номера</label><input id="c-prefix" maxlength="20" placeholder="напр. ИСХ-" /></div>
+      <div><label for="c-start">Начать с номера</label><input id="c-start" type="number" min="1" value="1" /></div>
+    </div>
+    <div class="hint">Если компания уже вела нумерацию — укажите, с какого номера продолжить (последний использованный + 1).</div>
+    <label class="check"><input type="checkbox" id="c-yearly" checked /> Начинать нумерацию заново каждый год</label>
+    <div class="err" id="co-err" role="alert"></div>
+    <div class="dlg-actions"><button type="button" class="btn ghost" id="co-cancel">Отмена</button><button class="btn" id="co-save" value="save">Создать</button></div>
+  </form>
+</dialog>
+
+<dialog id="dlg-edit">
+  <h3 id="ed-title">Письмо</h3>
+  <label for="e-recipient">Кому</label><input id="e-recipient" maxlength="300" />
+  <label for="e-subject">Тема</label><textarea id="e-subject" maxlength="1000"></textarea>
+  <label for="e-author">Исполнитель</label><input id="e-author" maxlength="200" />
+  <label for="e-note">Примечание</label><input id="e-note" maxlength="2000" />
+  <div class="hint">Номер и дату изменить нельзя — так нумерация остаётся честной. Ошибочный номер можно аннулировать: он останется в журнале.</div>
+  <div class="err" id="ed-err" role="alert"></div>
+  <div class="dlg-actions"><button class="btn ghost" id="ed-cancel">Отмена</button><button class="btn" id="ed-save">Сохранить</button></div>
+</dialog>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var PAGE = 50, offset = 0, total = 0, companies = [], editing = null, lastGot = null;
+
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function ruDate(iso){ var p = String(iso).split('-'); return p.length === 3 ? p[2] + '.' + p[1] + '.' + p[0] : iso; }
+  function todayISO(){ var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+  function api(method, url, body){
+    return fetch(url, { method: method, headers: {'Content-Type':'application/json'}, body: body ? JSON.stringify(body) : undefined })
+      .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ if (!r.ok) throw new Error(j.error || ('Ошибка ' + r.status)); return j; }); });
+  }
+  function lsGet(k){ try { return localStorage.getItem(k) || ''; } catch(e){ return ''; } }
+  function lsSet(k,v){ try { localStorage.setItem(k, v); } catch(e){} }
+
+  // ----- компании -----
+  function loadCompanies(){
+    return api('GET', '/api/outgoing/companies').then(function(list){
+      companies = list;
+      var active = list.filter(function(c){ return !c.archived; });
+      var cur = $('f-company').value || lsGet('out_company');
+      $('f-company').innerHTML = active.length ? active.map(function(c){ return '<option value="'+c.id+'">'+esc(c.name)+'</option>'; }).join('') : '<option value="">— сначала добавьте компанию —</option>';
+      if (active.some(function(c){ return String(c.id) === cur; })) $('f-company').value = cur;
+      var fc = $('flt-company').value;
+      $('flt-company').innerHTML = '<option value="">Все компании</option>' + list.map(function(c){ return '<option value="'+c.id+'">'+esc(c.name)+'</option>'; }).join('');
+      $('flt-company').value = fc;
+      $('companies').innerHTML = list.length ? list.map(function(c){
+        return '<div class="co'+(c.archived?' arch':'')+'"><div><div class="nm">'+esc(c.name)+'</div>' +
+          '<div class="meta">всего: '+c.letters_total+(c.last_date?' · последнее: '+ruDate(c.last_date):'')+'</div></div>' +
+          '<div style="text-align:right"><div class="last">'+(c.last_number ? '№ '+esc(c.last_number) : '—')+'</div>' +
+          '<button class="btn ghost sm" data-arch="'+c.id+'">'+(c.archived?'Вернуть':'В архив')+'</button></div></div>';
+      }).join('') : '<div class="sub">Пока нет компаний</div>';
+      showNext();
+    });
+  }
+  function showNext(){
+    var c = companies.find(function(x){ return String(x.id) === $('f-company').value; });
+    $('next-num').textContent = c ? c.next_number : '—';
+    $('next-last').textContent = c ? (c.last_number ? 'последний выданный: ' + c.last_number : 'номеров ещё не было') : '';
+    $('btn-take').disabled = !c;
+  }
+  $('f-company').addEventListener('change', function(){ lsSet('out_company', this.value); showNext(); });
+  $('companies').addEventListener('click', function(e){
+    var id = e.target.getAttribute('data-arch'); if (!id) return;
+    var c = companies.find(function(x){ return String(x.id) === id; });
+    api('PATCH', '/api/outgoing/companies/' + id, { archived: !c.archived }).then(loadCompanies).catch(function(er){ alert(er.message); });
+  });
+
+  $('btn-add-co').onclick = function(){ $('co-err').textContent=''; $('c-name').value=''; $('c-prefix').value=''; $('c-start').value='1'; $('c-yearly').checked=true; $('dlg-co').showModal(); $('c-name').focus(); };
+  $('co-cancel').onclick = function(){ $('dlg-co').close(); };
+  $('co-form').addEventListener('submit', function(e){
+    e.preventDefault();
+    api('POST', '/api/outgoing/companies', { name: $('c-name').value, prefix: $('c-prefix').value, start_number: $('c-start').value, reset_yearly: $('c-yearly').checked })
+      .then(function(c){ $('dlg-co').close(); lsSet('out_company', String(c.id)); return loadCompanies().then(function(){ $('f-company').value = String(c.id); showNext(); }); })
+      .catch(function(er){ $('co-err').textContent = er.message; });
+  });
+
+  // ----- выдача номера -----
+  $('f-date').value = todayISO();
+  $('f-author').value = lsGet('out_author');
+  $('btn-take').onclick = function(){
+    var btn = this; $('take-err').textContent = ''; btn.disabled = true;
+    api('POST', '/api/outgoing/letters', {
+      company_id: $('f-company').value, letter_date: $('f-date').value, recipient: $('f-recipient').value,
+      subject: $('f-subject').value, author: $('f-author').value, note: $('f-note').value
+    }).then(function(l){
+      lsSet('out_author', $('f-author').value);
+      lastGot = l;
+      $('got-num').textContent = 'Исх. № ' + l.number + ' от ' + ruDate(l.letter_date);
+      $('got-meta').textContent = l.company_name;
+      $('got').classList.add('on');
+      ['f-recipient','f-subject','f-note'].forEach(function(id){ $(id).value = ''; });
+      return Promise.all([loadCompanies(), loadLetters(true)]);
+    }).catch(function(er){ $('take-err').textContent = er.message; }).then(function(){ showNext(); });
+  };
+  $('btn-copy').onclick = function(){
+    if (!lastGot) return;
+    var t = 'Исх. № ' + lastGot.number + ' от ' + ruDate(lastGot.letter_date), b = this;
+    function done(){ b.textContent = 'Скопировано ✓'; setTimeout(function(){ b.textContent = 'Копировать «Исх. № … от …»'; }, 1500); }
+    if (navigator.clipboard) navigator.clipboard.writeText(t).then(done, function(){ window.prompt('Скопируйте:', t); });
+    else window.prompt('Скопируйте:', t);
+  };
+
+  // ----- журнал -----
+  function query(){
+    var p = new URLSearchParams();
+    if ($('q').value.trim()) p.set('q', $('q').value.trim());
+    if ($('flt-company').value) p.set('company_id', $('flt-company').value);
+    if ($('flt-year').value) p.set('year', $('flt-year').value);
+    if ($('flt-status').value) p.set('status', $('flt-status').value);
+    return p;
+  }
+  var items = [];
+  function loadLetters(reset){
+    if (reset) offset = 0;
+    var p = query(); p.set('limit', PAGE); p.set('offset', offset);
+    return api('GET', '/api/outgoing/letters?' + p.toString()).then(function(r){
+      items = r.items; total = r.total;
+      $('rows').innerHTML = items.map(function(l, i){
+        return '<tr class="'+(l.status==='void'?'void':'')+'"><td class="num">'+esc(l.number)+'</td><td>'+ruDate(l.letter_date)+'</td><td>'+esc(l.company_name)+'</td>' +
+          '<td>'+esc(l.recipient)+'<div class="sub">'+esc(l.subject)+(l.note?' · '+esc(l.note):'')+'</div></td><td>'+esc(l.author)+'</td>' +
+          '<td class="act"><button class="btn ghost sm" data-edit="'+i+'">Изменить</button></td></tr>';
+      }).join('');
+      $('empty').hidden = items.length > 0;
+      $('pager-info').textContent = total ? ((offset+1) + '–' + (offset+items.length) + ' из ' + total) : '';
+      $('pg-prev').disabled = offset === 0; $('pg-next').disabled = offset + PAGE >= total;
+      var csv = query(); $('btn-csv').href = '/api/outgoing/letters.csv?' + csv.toString();
+    }).catch(function(er){ $('rows').innerHTML=''; $('empty').hidden=false; $('empty').textContent = er.message; });
+  }
+  var y = new Date().getFullYear();
+  $('flt-year').innerHTML = '<option value="">Все годы</option>' + [y+1,y,y-1,y-2,y-3].map(function(v){ return '<option value="'+v+'">'+v+'</option>'; }).join('');
+  var timer; $('q').addEventListener('input', function(){ clearTimeout(timer); timer = setTimeout(function(){ loadLetters(true); }, 250); });
+  ['flt-company','flt-year','flt-status'].forEach(function(id){ $(id).addEventListener('change', function(){ loadLetters(true); }); });
+  $('pg-prev').onclick = function(){ offset = Math.max(0, offset - PAGE); loadLetters(); };
+  $('pg-next').onclick = function(){ offset += PAGE; loadLetters(); };
+
+  // ----- правка / аннулирование -----
+  var voidBtn;
+  $('rows').addEventListener('click', function(e){
+    var i = e.target.getAttribute('data-edit'); if (i == null) return;
+    editing = items[Number(i)];
+    $('ed-title').textContent = 'Исх. № ' + editing.number + ' · ' + editing.company_name;
+    $('e-recipient').value = editing.recipient; $('e-subject').value = editing.subject; $('e-author').value = editing.author; $('e-note').value = editing.note;
+    $('ed-err').textContent = '';
+    if (!voidBtn){ voidBtn = document.createElement('button'); voidBtn.className = 'btn ghost'; voidBtn.style.marginRight = 'auto'; $('ed-cancel').parentNode.insertBefore(voidBtn, $('ed-cancel')); voidBtn.onclick = toggleVoid; }
+    voidBtn.textContent = editing.status === 'void' ? 'Восстановить' : 'Аннулировать';
+    $('dlg-edit').showModal();
+  });
+  function patch(body){
+    return api('PATCH', '/api/outgoing/letters/' + editing.id, body).then(function(){ $('dlg-edit').close(); return Promise.all([loadLetters(), loadCompanies()]); }).catch(function(er){ $('ed-err').textContent = er.message; });
+  }
+  $('ed-cancel').onclick = function(){ $('dlg-edit').close(); };
+  $('ed-save').onclick = function(){ patch({ recipient: $('e-recipient').value, subject: $('e-subject').value, author: $('e-author').value, note: $('e-note').value }); };
+  function toggleVoid(){
+    var to = editing.status === 'void' ? 'active' : 'void';
+    if (to === 'void' && !confirm('Аннулировать номер ' + editing.number + '? Он останется в журнале и больше выдан не будет.')) return;
+    patch({ status: to });
+  }
+
+  loadCompanies().then(function(){ return loadLetters(true); }).catch(function(er){ $('take-err').textContent = er.message; });
+})();
+</script>
+</body>
+</html>

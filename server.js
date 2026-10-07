@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const { Pool } = require('pg');
 const { createProxyMiddleware } = require('http-proxy-middleware');
+const { createOutgoingRouter, initOutgoingSchema } = require('./outgoing');
 
 const PORT = Number(process.env.PORT || 3000);
 const HOST = '0.0.0.0';
@@ -24,7 +25,8 @@ async function initDb() {
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `);
-  console.log('PostgreSQL connected and app_storage is ready.');
+  await initOutgoingSchema(pool);
+  console.log('PostgreSQL connected, app_storage and outgoing-letters tables are ready.');
 }
 
 const app = express();
@@ -143,6 +145,9 @@ app.delete('/api/storage', async (req, res) => {
   }
 });
 
+// ---------- /api/outgoing (учёт исходящих номеров) ----------
+app.use('/api/outgoing', createOutgoingRouter(pool));
+
 // ---------- Page routes (EJS views, same public URLs as before) ----------
 
 app.get('/', (req, res) => res.render('index'));
@@ -150,6 +155,7 @@ app.get('/akt.html', (req, res) => res.render('akt'));
 app.get('/visa.html', (req, res) => res.render('visa'));
 app.get('/kadr.html', (req, res) => res.render('kadr'));
 app.get('/marginalia.html', (req, res) => res.render('marginalia'));
+app.get('/outgoing.html', (req, res) => res.render('outgoing'));
 
 app.use((req, res) => {
   res.status(404).type('text/plain; charset=utf-8').send('Not found');

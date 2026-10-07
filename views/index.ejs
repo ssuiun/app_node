@@ -61,6 +61,7 @@
       <a href="javascript:void(0)" id="nav-akt" onclick="openTool('akt')"><span class="ic">📑</span>Акт приёма-передачи</a>
       <a href="javascript:void(0)" id="nav-viz" onclick="openTool('viz')"><span class="ic">🛂</span>Визы и договоры</a>
       <a href="javascript:void(0)" id="nav-kadr" onclick="openTool('kadr')"><span class="ic">👥</span>Кадровые приказы</a>
+      <a href="javascript:void(0)" id="nav-out" onclick="openTool('out')"><span class="ic">📨</span>Исходящие номера</a>
       <a href="javascript:void(0)" id="nav-marg" onclick="openTool('marg')"><span class="ic">✅</span>Marginalia</a>
       <a href="javascript:void(0)" id="nav-pdf" onclick="openTool('pdf')"><span class="ic">📄</span>PDF-инструменты</a>
     </nav>
@@ -117,6 +118,12 @@
             <div class="desc">Приём, увольнение и кадровые документы</div>
             <div class="go">Открыть →</div>
           </div>
+          <div class="bsp-tool-card" onclick="openTool('out')">
+            <div class="icon" style="background:linear-gradient(135deg,#3d5a80,#26394f)">📨</div>
+            <div class="title">Исходящие номера</div>
+            <div class="desc">Автоматическая нумерация писем и журнал по каждой компании</div>
+            <div class="go">Открыть →</div>
+          </div>
           <div class="bsp-tool-card" onclick="openTool('marg')">
             <div class="icon" style="background:linear-gradient(135deg,#2e7d5b,#1e5a40)">✅</div>
             <div class="title">Marginalia</div>
@@ -167,6 +174,10 @@
         <div class="loading" id="load-kadr"><div class="spin"></div>Загрузка…</div>
         <iframe id="frame-kadr" title="Кадровые приказы"></iframe>
       </div>
+      <div class="frame-wrap" id="wrap-out">
+        <div class="loading" id="load-out"><div class="spin"></div>Загрузка…</div>
+        <iframe id="frame-out" title="Исходящие номера"></iframe>
+      </div>
       <div class="frame-wrap" id="wrap-marg">
         <div class="loading" id="load-marg"><div class="spin"></div>Загрузка…</div>
         <iframe id="frame-marg" title="Marginalia"></iframe>
@@ -180,9 +191,9 @@
 </div>
 
 <script>
-  var SRC = { akt:'akt.html', viz:'visa.html', kadr:'kadr.html', marg:'marginalia.html', pdf:'pdf/' };
-  var loaded = { akt:false, viz:false, kadr:false, marg:false, pdf:false };
-  var NAVS = ['home','akt','viz','kadr','marg','pdf'];
+  var SRC = { akt:'akt.html', viz:'visa.html', kadr:'kadr.html', marg:'marginalia.html', out:'outgoing.html', pdf:'pdf/' };
+  var loaded = { akt:false, viz:false, kadr:false, marg:false, out:false, pdf:false };
+  var NAVS = ['home','akt','viz','kadr','out','marg','pdf'];
 
   function toggleSidebar(force){
     var shell = document.querySelector('.bsp-shell');
@@ -213,7 +224,7 @@
     if (!SRC[key]) return;
     document.getElementById('home-view').classList.add('hidden');
     document.getElementById('frame-area').classList.add('on');
-    ['akt','viz','kadr','marg','pdf'].forEach(function(k){
+    ['akt','viz','kadr','out','marg','pdf'].forEach(function(k){
       document.getElementById('wrap-'+k).classList.toggle('on', k===key);
     });
     setActiveNav(key);
