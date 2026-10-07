@@ -2,7 +2,7 @@ const express = require('express');
 const path = require('path');
 const { Pool } = require('pg');
 const { createProxyMiddleware } = require('http-proxy-middleware');
-const { createOutgoingRouter, initOutgoingSchema } = require('./outgoing');
+const { createOutgoingRouter, initOutgoingSchema, purgeExpiredFiles } = require('./outgoing');
 
 const PORT = Number(process.env.PORT || 3000);
 const HOST = '0.0.0.0';
@@ -201,6 +201,12 @@ function listenOnPort(port) {
 
 initDb()
   .then(() => {
+    if (pool) {
+      // Раз в 6 часов удаляем файлы исходящих писем, у которых истёк срок хранения.
+      const purge = () => purgeExpiredFiles(pool).catch((err) => console.error('Purge failed:', err.message));
+      purge();
+      setInterval(purge, 6 * 60 * 60 * 1000).unref();
+    }
     listenOnPort(PORT);
   })
   .catch(err => {
