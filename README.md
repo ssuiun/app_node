@@ -56,3 +56,9 @@
 который добавляет `rus` и `kir`. В Railway у сервиса `stirling-pdf`:
 **Settings → Source** → подключить репозиторий `app_node`, **Root Directory** = `/stirling`.
 Переменные сервиса (`PORT`, `SYSTEM_ROOTURIPATH`, `SYSTEM_DEFAULTLOCALE` и др.) сохраняются.
+
+## Agentation (визуальные комментарии для ИИ)
+
+Тулбар [Agentation](https://agentation.com): кликаете по элементу страницы, пишете замечание и копируете готовый текст для ИИ-агента (с селекторами элементов).
+Включается переменной окружения `AGENTATION=1` (по умолчанию выключен; на Railway добавляйте только если нужен). Тулбар появляется справа внизу.
+Пересборка бандла после обновления пакета: `npm run build:agentation` (результат — `public/vendor/agentation.js`, лежит в репозитории).

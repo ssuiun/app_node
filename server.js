@@ -65,6 +65,21 @@ if (STIRLING_URL) {
   console.warn('STIRLING_URL is not set. /pdf is disabled.');
 }
 
+// ---------- Agentation (визуальные комментарии для ИИ-агента) ----------
+// Только по явному включению: AGENTATION=1. В обычном продакшене скрипт не подключается.
+if (process.env.AGENTATION === '1') {
+  const TAG = '<script src="/vendor/agentation.js" defer></script>';
+  app.use((req, res, next) => {
+    const render = res.render.bind(res);
+    res.render = (view, options) => render(view, options, (err, html) => {
+      if (err) return next(err);
+      res.send(html.replace(/<\/body>/i, TAG + '</body>'));
+    });
+    next();
+  });
+  console.log('Agentation toolbar is enabled.');
+}
+
 app.use(express.json({ limit: MAX_BODY }));
 
 // Static assets: bsp-theme.css, railway-sync.js, assets/img/*, etc.

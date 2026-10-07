@@ -30,6 +30,7 @@
   .bsp-shell.sb-collapsed .bsp-sidebar{display:none}
   .bsp-shell.sb-collapsed .sb-toggle{left:0}
   @media (max-width:900px){.sb-toggle{display:none}}
+  body.tool-open .agentation-host{display:none}
   .bsp-logo-spacer{height:150px}
   @media (max-width:900px){.bsp-logo-spacer{display:none}}
 
@@ -216,6 +217,7 @@
   function goHome(){
     document.getElementById('home-view').classList.remove('hidden');
     document.getElementById('frame-area').classList.remove('on');
+    document.body.classList.remove('tool-open');
     setActiveNav('home');
     try { history.replaceState(null, '', '#home'); } catch(e){}
   }
@@ -227,6 +229,7 @@
     ['akt','viz','kadr','out','marg','pdf'].forEach(function(k){
       document.getElementById('wrap-'+k).classList.toggle('on', k===key);
     });
+    document.body.classList.add('tool-open');
     setActiveNav(key);
 
     if (!loaded[key]){
