@@ -171,3 +171,15 @@ test('компании подтягиваются из «Визы и догов�
   assert.ok(list.find((x) => x.name === 'Визовая Тета-2'));
   assert.equal(list.find((x) => x.name === 'Визовая Тета'), undefined);
 });
+
+test('номер вручную: занят — отказ, счётчик не уменьшается', opts, async () => {
+  const c = (await call('POST', '/companies', { name: 'Йота', prefix: 'И-' })).body;
+  const mk = (extra) => call('POST', '/letters', { company_id: c.id, letter_date: '2026-07-01', ...extra });
+  assert.equal((await mk({ seq: 20 })).body.number, 'И-20');
+  assert.equal((await mk({ seq: 20 })).status, 409);
+  assert.equal((await mk({ seq: 0 })).status, 400);
+  assert.equal((await mk({ seq: 'abc' })).status, 400);
+  assert.equal((await mk({ seq: 5 })).body.number, 'И-5');      // можно занять пропуск
+  assert.equal((await mk({})).body.number, 'И-21');             // авто идёт после наибольшего
+  assert.equal((await mk({ seq: '' })).body.number, 'И-22');    // пустое значение = авто
+});

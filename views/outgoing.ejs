@@ -228,6 +228,11 @@ function renderThemeGrid(){
     <input id="f-recipient" maxlength="300" placeholder="Например: Министерство юстиции КР" />
     <label for="f-subject">Тема / краткое содержание</label>
     <textarea id="f-subject" maxlength="1000"></textarea>
+    <label class="check"><input type="checkbox" id="f-manual" /> Указать номер вручную</label>
+    <div id="f-manual-box" hidden>
+      <input type="number" id="f-seq" min="1" step="1" inputmode="numeric" placeholder="Например: 15" aria-label="Номер вручную" />
+      <div class="hint">Для письма, которое уже отправлено под известным номером. Следующие номера пойдут после самого большого.</div>
+    </div>
     <label for="f-files">Файлы письма (необязательно)</label>
     <input type="file" id="f-files" multiple />
     <div class="hint" id="f-files-hint"></div>
@@ -482,14 +487,17 @@ function renderThemeGrid(){
     $('next-num').textContent = c ? c.next_number : '—';
     $('next-last').textContent = c ? (c.last_number ? 'последний выданный: ' + c.last_number : 'номеров ещё не было') : '';
     $('btn-take').disabled = !c;
+    $('btn-take').textContent = $('f-manual').checked ? 'Записать номер' : 'Получить номер';
   }
   $('f-company').addEventListener('change', function(){ lsSet('out_company', this.value); showNext(); });
   function openNew(companyId){
     if (companyId) $('f-company').value = String(companyId);
     $('new-form').hidden = false; $('new-done').hidden = true; $('take-err').textContent = '';
+    $('f-manual').checked = false; $('f-manual-box').hidden = true; $('f-seq').value = '';
     $('f-date').value = todayISO(); $('f-files').value = '';
     showNext(); $('dlg-new').showModal(); $('f-recipient').focus();
   }
+  $('f-manual').addEventListener('change', function(){ $('f-manual-box').hidden = !this.checked; if (this.checked) $('f-seq').focus(); showNext(); });
   $('btn-new').onclick = function(){ openNew(null); };
   $('new-cancel').onclick = $('done-close').onclick = function(){ $('dlg-new').close(); };
   $('done-again').onclick = function(){ ['f-recipient','f-subject'].forEach(function(id){ $(id).value=''; }); openNew(null); };
@@ -499,7 +507,8 @@ function renderThemeGrid(){
     var big = files.filter(function(f){ return f.size > STATS.max_file_mb * 1048576; })[0];
     if (big) { $('take-err').textContent = '«' + big.name + '» больше ' + STATS.max_file_mb + ' МБ'; btn.disabled = false; return; }
     api('POST', '/api/outgoing/letters', {
-      company_id: $('f-company').value, letter_date: $('f-date').value, recipient: $('f-recipient').value, subject: $('f-subject').value
+      company_id: $('f-company').value, letter_date: $('f-date').value, recipient: $('f-recipient').value, subject: $('f-subject').value,
+      seq: $('f-manual').checked ? $('f-seq').value : ''
     }).then(function(l){
       lastGot = l;
       var failed = [];
@@ -508,12 +517,13 @@ function renderThemeGrid(){
       }, Promise.resolve());
       return chain.then(function(){
         $('got-company').textContent = l.company_name;
+        $('new-done').querySelector('h3').textContent = $('f-manual').checked ? 'Номер записан' : 'Номер выдан';
         $('got-num').textContent = 'Исх. № ' + l.number + ' от ' + ruDate(l.letter_date);
         $('got-warn').textContent = failed.length ? 'Номер выдан, но не все файлы загрузились: ' + failed.join('; ') + '. Добавьте их через «Изменить».' : (files.length ? 'Файлов загружено: ' + files.length : '');
         $('new-form').hidden = true; $('new-done').hidden = false;
         return reloadAll();
       });
-    }).catch(function(er){ $('take-err').textContent = er.message; }).then(function(){ btn.textContent = 'Получить номер'; showNext(); });
+    }).catch(function(er){ $('take-err').textContent = er.message; }).then(function(){ showNext(); });
   };
   $('btn-copy').onclick = function(){
     if (!lastGot) return;

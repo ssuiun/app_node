@@ -254,6 +254,11 @@ function createOutgoingRouter(pool) {
     if (!(companyId >= 1)) return res.status(400).json({ error: 'Выберите компанию' });
     const letterDate = b.letter_date ? String(b.letter_date) : todayISO();
     if (!validDate(letterDate)) return res.status(400).json({ error: 'Некорректная дата' });
+    // Номер вручную (необязательно): для писем, которые уже отправлены под известным номером.
+    const manual = b.seq === undefined || b.seq === null || b.seq === '' ? null : Number(b.seq);
+    if (manual !== null && !(Number.isInteger(manual) && manual >= 1 && manual < 1e9)) {
+      return res.status(400).json({ error: 'Номер должен быть целым числом от 1' });
+    }
 
     const client = await pool.connect();
     try {
@@ -265,12 +270,28 @@ function createOutgoingRouter(pool) {
       if (company.archived) { await client.query('ROLLBACK'); return res.status(409).json({ error: 'Компания в архиве' }); }
 
       const period = periodFor(company, letterDate);
-      const upd = await client.query(
-        `INSERT INTO out_counters(company_id, period, last_seq) VALUES($1,$2,$3)
-         ON CONFLICT (company_id, period) DO UPDATE SET last_seq = out_counters.last_seq + 1
-         RETURNING last_seq`,
-        [companyId, period, company.start_number]);
-      const seq = upd.rows[0].last_seq;
+      let seq;
+      if (manual === null) {
+        const upd = await client.query(
+          `INSERT INTO out_counters(company_id, period, last_seq) VALUES($1,$2,$3)
+           ON CONFLICT (company_id, period) DO UPDATE SET last_seq = out_counters.last_seq + 1
+           RETURNING last_seq`,
+          [companyId, period, company.start_number]);
+        seq = upd.rows[0].last_seq;
+      } else {
+        const taken = await client.query(
+          'SELECT 1 FROM out_letters WHERE company_id = $1 AND period = $2 AND seq = $3', [companyId, period, manual]);
+        if (taken.rowCount) {
+          await client.query('ROLLBACK');
+          return res.status(409).json({ error: `Номер ${formatNumber(company.prefix, manual)} уже занят` });
+        }
+        // Счётчик не уменьшается: следующий автоматический номер пойдёт после самого большого.
+        await client.query(
+          `INSERT INTO out_counters(company_id, period, last_seq) VALUES($1,$2,$3)
+           ON CONFLICT (company_id, period) DO UPDATE SET last_seq = GREATEST(out_counters.last_seq, $3)`,
+          [companyId, period, manual]);
+        seq = manual;
+      }
       const number = formatNumber(company.prefix, seq);
 
       const ins = await client.query(
