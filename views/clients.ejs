@@ -208,7 +208,7 @@
   var comp = { items: [], total: 0 }, cli = { items: [], total: 0 };
   var editingComp = null, editingCli = null;
   var view = 'cards', maxFileMb = 25, dataLoaded = false;
-  try { if (localStorage.getItem('cl_view') === 'list') view = 'list'; } catch(e){}
+  try { if ((localStorage.getItem('bsp_view') || localStorage.getItem('cl_view')) === 'list') view = 'list'; } catch(e){}
 
   function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
   var toastT;
@@ -307,7 +307,7 @@
   }
   function loadCounts(){ return api('GET', '/api/clients/stats').then(function(s){ $('comp-count').textContent = s.companies; $('cli-count').textContent = s.clients; maxFileMb = s.max_file_mb || maxFileMb; }).catch(function(){}); }
   function setView(v){
-    view = v; try { localStorage.setItem('cl_view', v); } catch(e){}
+    view = v; try { localStorage.setItem('bsp_view', v); } catch(e){}
     Array.prototype.forEach.call(document.querySelectorAll('.viewsw button'), function(b){ b.classList.toggle('on', b.getAttribute('data-view') === v); });
     if (dataLoaded) { renderComp(); renderCli(); }
   }

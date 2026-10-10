@@ -110,6 +110,10 @@
     .sb input{width:100%;padding:.6rem .85rem .6rem 2.3rem;background:var(--card);border:1px solid var(--border);border-radius:var(--rs);color:var(--txt);font-family:inherit;font-size:.87rem;outline:none;transition:border-color var(--tr)}
     .sb input:focus{border-color:var(--acc)}
     .si{position:absolute;left:.72rem;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.82rem;pointer-events:none}
+    .viewsw{display:inline-flex;border:1px solid var(--border2);border-radius:var(--rs);overflow:hidden;flex-shrink:0}
+    .viewsw button{border:none;background:var(--card);color:var(--txt2);padding:.4rem .75rem;font:inherit;font-size:.78rem;font-weight:600;cursor:pointer}
+    .viewsw button+button{border-left:1px solid var(--border2)}
+    .viewsw button.on{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff}
     .cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:.9rem}
     .cc{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1.15rem;transition:border-color var(--tr),transform var(--tr),box-shadow var(--tr);position:relative;overflow:hidden}
     .cc::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(to bottom,var(--acc),var(--acc2));opacity:0;transition:opacity var(--tr)}
@@ -487,6 +491,7 @@
     <div class="ptitle" style="margin:0"><h1 style="font-size:1.4rem">База компаний</h1></div>
     <div style="display:flex;gap:.65rem;align-items:center;flex-wrap:wrap">
       <div class="sb"><span class="si">🔍</span><label for="search" class="sr-only">Поиск компании</label><input type="text" id="search" placeholder="Поиск по названию, ИНН..." oninput="renderComp()" /></div>
+      <div class="viewsw" role="group" aria-label="Вид"><button type="button" data-view="cards" title="Карточками">▦ Карточки</button><button type="button" data-view="list" title="Списком">☰ Список</button></div>
       <button class="btn bg bsm" onclick="exportDB()" title="Скачать базу компаний в JSON">⬇️ Экспорт</button>
       <button class="btn bg bsm" onclick="document.getElementById('import-file').click()" title="Загрузить компании из JSON">⬆️ Импорт</button>
       <input type="file" id="import-file" accept="application/json" style="display:none" onchange="importDB(this)" />
@@ -1620,7 +1625,15 @@ function copyAllScanCo() {
 /* ═══ COMPANIES ═══ */
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
+let compView = (function(){ try { return localStorage.getItem('bsp_view') || localStorage.getItem('cl_view') || 'cards'; } catch(e){ return 'cards'; } })();
+function setCompView(v) {
+  compView = v; try { localStorage.setItem('bsp_view', v); } catch(e){}
+  document.querySelectorAll('#panel-comp .viewsw button').forEach(b => b.classList.toggle('on', b.getAttribute('data-view') === v));
+  renderComp();
+}
+document.addEventListener('click', e => { const b = e.target.closest('#panel-comp .viewsw button'); if (b) setCompView(b.getAttribute('data-view')); });
 function renderComp() {
+  document.querySelectorAll('#panel-comp .viewsw button').forEach(b => b.classList.toggle('on', b.getAttribute('data-view') === compView));
   const q = (document.getElementById('search').value||'').toLowerCase();
   const list = DB.filter(c =>
     c.name.toLowerCase().includes(q) ||
@@ -1631,7 +1644,15 @@ function renderComp() {
   document.getElementById('stats').innerHTML =
     `<div class="chip">Всего: <strong>${DB.length}</strong></div>${q?`<div class="chip">Найдено: <strong>${list.length}</strong></div>`:''}`;
   const g = document.getElementById('cgrid');
-  if (!list.length) { g.innerHTML='<div class="nores">🔍 Компании не найдены</div>'; return; }
+  if (!list.length) { g.className = 'cgrid'; g.innerHTML='<div class="nores">🔍 Компании не найдены</div>'; return; }
+  if (compView === 'list') {
+    g.className = 'vtable-wrap';
+    g.innerHTML = `<table class="vtable"><thead><tr><th>№</th><th>Название</th><th>Директор</th><th>ИНН</th><th>ОКПО</th><th>Адрес</th><th></th></tr></thead><tbody>` +
+      list.map(c=>`<tr><td>${esc(c.id)}</td><td><strong>${esc(c.name)}</strong></td><td>${esc(c.director)}</td><td>${esc(c.inn)}</td><td>${esc(c.okpo||'')}</td><td>${esc(c.address)}</td>
+        <td style="white-space:nowrap"><button class="btn bg bsm" onclick="openM('${c.id}')" title="Редактировать">✏️</button> <button class="btn bd bsm" onclick="delC('${c.id}')" title="Удалить">🗑️</button></td></tr>`).join('') + `</tbody></table>`;
+    return;
+  }
+  g.className = 'cgrid';
   g.innerHTML = list.map(c=>`
     <div class="cc">
       <div class="cch">

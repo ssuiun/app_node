@@ -68,7 +68,17 @@
   .pager{display:flex;align-items:center;justify-content:space-between;margin-top:.8rem;font-size:.82rem;color:var(--muted)}
   .empty{padding:1.6rem;text-align:center;color:var(--muted)}
   /* COMPANIES */
-  .toolbar{display:flex;gap:.7rem;margin-bottom:1rem;flex-wrap:wrap}.toolbar input{max-width:380px}
+  .toolbar{display:flex;gap:.7rem;margin-bottom:1rem;flex-wrap:wrap;align-items:center}.toolbar input{max-width:380px}
+  .viewsw{display:inline-flex;margin-left:auto;border:1px solid var(--border2);border-radius:var(--rs);overflow:hidden;flex-shrink:0}
+  .viewsw button{border:none;background:var(--card);color:var(--txt2);padding:.45rem .8rem;font:inherit;font-size:.8rem;font-weight:600;cursor:pointer}
+  .viewsw button+button{border-left:1px solid var(--border2)}
+  .viewsw button.on{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff}
+  .list{overflow:auto;background:var(--card);border:1px solid var(--border);border-top:2px solid var(--acc2);border-radius:var(--r)}
+  .list .gear{border:none;background:none;cursor:pointer;font-size:1rem;color:var(--muted);padding:0 .2rem}
+  .list .gear:hover{color:var(--acc)}
+  tr[data-co]{cursor:pointer}
+  tr[data-co]:hover td{background:color-mix(in srgb,var(--acc2) 10%,transparent)}
+  tr:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
   .cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:.9rem}
   .cc{background:var(--card);border:1px solid var(--border);border-top:2px solid var(--acc2);border-radius:var(--r);padding:1rem 1.1rem;cursor:pointer;transition:border-color var(--tr),transform var(--tr),box-shadow var(--tr);display:flex;flex-direction:column;gap:.55rem}
   .cc:hover{border-color:var(--acc);transform:translateY(-2px);box-shadow:0 10px 24px -14px rgba(60,20,10,.45)}
@@ -160,7 +170,7 @@
     <div id="comp-list">
       <div class="ptitle"><div><h1>Компании</h1><p>Список из раздела «Визы и договоры». Нажмите на карточку, чтобы увидеть все письма компании.</p></div>
         <button class="btn ghost" id="btn-add-co" type="button">＋ Компания не из виз</button></div>
-      <div class="toolbar"><input id="co-search" type="search" placeholder="Найти компанию…" aria-label="Найти компанию" /></div>
+      <div class="toolbar"><input id="co-search" type="search" placeholder="Найти компанию…" aria-label="Найти компанию" /><div class="viewsw" role="group" aria-label="Вид"><button type="button" data-view="cards" title="Карточками">▦ Карточки</button><button type="button" data-view="list" title="Списком">☰ Список</button></div></div>
       <div class="cgrid" id="cgrid"></div>
     </div>
 
@@ -390,10 +400,29 @@
       if (currentCompany) { currentCompany = list.find(function(c){ return c.id === currentCompany.id; }) || null; if (currentCompany) fillDetailHead(); }
     });
   }
+  var view = (function(){ try { return localStorage.getItem('bsp_view') || localStorage.getItem('cl_view') || 'cards'; } catch(e){ return 'cards'; } })();
+  function setView(v){
+    view = v; try { localStorage.setItem('bsp_view', v); } catch(e){}
+    Array.prototype.forEach.call(document.querySelectorAll('.viewsw button'), function(b){ b.classList.toggle('on', b.getAttribute('data-view') === v); });
+    renderCards();
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('.viewsw button'), function(b){ b.onclick = function(){ setView(b.getAttribute('data-view')); }; });
   function renderCards(){
     var q = $('co-search').value.trim().toLowerCase();
     var list = companies.filter(function(c){ return !q || c.name.toLowerCase().indexOf(q) >= 0; });
-    $('cgrid').innerHTML = list.length ? list.map(function(c){
+    var grid = $('cgrid');
+    if (view === 'list' && list.length) {
+      grid.className = 'list';
+      grid.innerHTML = '<table><thead><tr><th>Компания</th><th>Писем</th><th>Последний №</th><th>Следующий №</th><th>Файлы</th><th></th></tr></thead><tbody>' +
+        list.map(function(c){
+          return '<tr tabindex="0" role="button" data-co="' + c.id + '"><td><b>' + esc(c.name) + '</b></td><td>' + c.letters_total + '</td><td>' + (c.last_number ? esc(c.last_number) : '—') + '</td>' +
+            '<td><b style="color:var(--acc)">' + esc(c.next_number) + '</b></td><td>' + (c.files_total ? '📎 ' + c.files_total : '') + '</td>' +
+            '<td class="act"><button class="gear" data-gear="' + c.id + '" title="Настройки нумерации" aria-label="Настройки нумерации">⚙</button></td></tr>';
+        }).join('') + '</tbody></table>';
+      return;
+    }
+    grid.className = 'cgrid';
+    grid.innerHTML = list.length ? list.map(function(c){
       return '<div class="cc" tabindex="0" role="button" data-co="' + c.id + '"><div class="top"><div class="nm">' + esc(c.name) + '</div>' +
         '<button class="gear" data-gear="' + c.id + '" title="Настройки нумерации" aria-label="Настройки нумерации">⚙</button></div>' +
         '<div class="meta"><span class="chip">писем: <b>' + c.letters_total + '</b></span>' +
@@ -557,6 +586,7 @@
   $('theme-grid').addEventListener('click', function(e){ var b = e.target.closest('[data-theme]'); if (b) AppTheme.apply(b.getAttribute('data-theme')); });
 
   // старт
+  Array.prototype.forEach.call(document.querySelectorAll('.viewsw button'), function(b){ b.classList.toggle('on', b.getAttribute('data-view') === view); });
   var initial = (location.hash || '').replace('#','');
   loadStats();
   loadCompanies().then(function(){ showTab(initial === 'comp' ? 'comp' : 'journal'); }).catch(function(er){ $('empty').hidden = false; $('empty').textContent = er.message; });
