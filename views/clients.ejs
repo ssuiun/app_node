@@ -11,6 +11,7 @@
   :root{--bg:#faf6ef;--bg2:#f3ead9;--card:#fffdf8;--card2:#f3ead9;--border:#e7d9c0;--border2:#d9c6a3;--acc:#9c1a22;--acc2:#c9a353;--acc3:#2e8b57;--txt:#2b1c14;--txt2:#6b5644;--muted:#8a7561;--r:14px;--rs:8px;--tr:.22s cubic-bezier(.4,0,.2,1);--hdr1:#8c1220;--hdr2:#5c0f14;--hdr-txt:#fff;--glow:0 0 18px rgba(156,26,34,.22)}
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   [hidden]{display:none!important}
+  a.btn{text-decoration:none}
   body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;line-height:1.6}
   header{background:linear-gradient(135deg,var(--hdr1),var(--hdr2));border-bottom:1px solid var(--border);padding:0 1.5rem;position:sticky;top:0;z-index:100;color:var(--hdr-txt);transition:background .3s ease}
   .hdr{max-width:1320px;margin:0 auto;display:flex;align-items:center;gap:1.5rem;min-height:62px;flex-wrap:wrap;padding:.4rem 0}
@@ -54,6 +55,24 @@
   .chip{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:0 .6rem;font-size:.74rem;color:var(--txt2);font-family:inherit}
   button.chip{cursor:pointer}button.chip:hover{border-color:var(--acc);color:var(--acc)}
   .chip b{color:var(--acc)}
+  .viewsw{display:inline-flex;margin-left:auto;border:1px solid var(--border2);border-radius:var(--rs);overflow:hidden;flex-shrink:0}
+  .viewsw button{border:none;background:var(--card);color:var(--txt2);padding:.45rem .8rem;font:inherit;font-size:.8rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:.35rem}
+  .viewsw button+button{border-left:1px solid var(--border2)}
+  .viewsw button.on{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff}
+  .list{overflow:auto;background:var(--card);border:1px solid var(--border);border-top:2px solid var(--acc2);border-radius:var(--r)}
+  table{width:100%;border-collapse:collapse;font-size:.85rem}
+  th{text-align:left;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:.6rem .7rem;border-bottom:2px solid var(--border);white-space:nowrap}
+  td{padding:.55rem .7rem;border-bottom:1px solid var(--border);vertical-align:top}
+  tr[data-comp],tr[data-cli]{cursor:pointer}
+  tr[data-comp]:hover td,tr[data-cli]:hover td{background:color-mix(in srgb,var(--acc2) 10%,transparent)}
+  tr:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
+  td.nm{font-weight:700;min-width:180px}
+  .sub{color:var(--muted);font-size:.76rem;font-weight:400}
+  .flist{margin-top:.5rem;border:1px solid var(--border);border-radius:var(--rs);background:var(--bg2)}
+  .frow{display:flex;align-items:center;gap:.5rem;padding:.45rem .7rem;border-top:1px solid var(--border);font-size:.82rem}
+  .frow:first-child{border-top:none}
+  .frow .fn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .hint{color:var(--muted);font-size:.76rem;margin-top:.3rem}
   .more{display:flex;justify-content:center;margin-top:1.1rem}
   .empty{padding:2rem 1rem;text-align:center;color:var(--muted);grid-column:1/-1}
   dialog{border:1px solid var(--border);border-radius:var(--r);padding:1.3rem;width:min(560px,94vw);max-height:92vh;overflow:auto;background:var(--card);color:var(--txt);margin:auto}
@@ -93,6 +112,7 @@
     <div class="toolbar">
       <input id="comp-q" type="search" placeholder="Поиск: название, ИНН, директор, адрес…" aria-label="Поиск компаний" />
       <button class="btn ghost" id="btn-import" type="button" title="Добавить компании из раздела «Визы и договоры». Уже добавленные не меняются.">⬇ Импорт из «Визы и договоры»</button>
+      <div class="viewsw" role="group" aria-label="Вид"><button type="button" data-view="cards" title="Карточками">▦ Карточки</button><button type="button" data-view="list" title="Списком">☰ Список</button></div>
     </div>
     <div class="cgrid" id="comp-grid"></div>
     <div class="more"><button class="btn ghost" id="comp-more" type="button" hidden>Показать ещё</button></div>
@@ -107,6 +127,7 @@
     <div class="toolbar">
       <input id="cli-q" type="search" placeholder="Поиск: ФИО, телефон, компания, паспорт…" aria-label="Поиск клиентов" />
       <select id="cli-company" aria-label="Фильтр по компании"></select>
+      <div class="viewsw" role="group" aria-label="Вид"><button type="button" data-view="cards" title="Карточками">▦ Карточки</button><button type="button" data-view="list" title="Списком">☰ Список</button></div>
     </div>
     <div class="cgrid" id="cli-grid"></div>
     <div class="more"><button class="btn ghost" id="cli-more" type="button" hidden>Показать ещё</button></div>
@@ -131,6 +152,10 @@
   <label for="c-activity">Вид деятельности</label><input id="c-activity" maxlength="400" />
   <label for="c-info">Регистрация</label><input id="c-info" maxlength="1000" placeholder="зарегистрировано … года, регистрационный №…" />
   <label for="c-notes">Примечание</label><textarea id="c-notes" maxlength="2000"></textarea>
+  <label>Файлы</label>
+  <div class="flist" id="c-files"></div>
+  <input type="file" id="c-addfile" multiple style="margin-top:.5rem" />
+  <div class="hint" id="c-files-hint"></div>
   <div class="err" id="dc-err" role="alert"></div>
   <div class="dlg-actions">
     <button class="btn danger" id="dc-del" type="button" style="margin-right:auto">🗑 Удалить</button>
@@ -153,6 +178,10 @@
     <div><label for="k-passport">Паспорт</label><input id="k-passport" maxlength="100" /></div>
   </div>
   <label for="k-notes">Примечание</label><textarea id="k-notes" maxlength="2000"></textarea>
+  <label>Файлы</label>
+  <div class="flist" id="k-files"></div>
+  <input type="file" id="k-addfile" multiple style="margin-top:.5rem" />
+  <div class="hint" id="k-files-hint"></div>
   <div class="err" id="dl-err" role="alert"></div>
   <div class="dlg-actions">
     <button class="btn danger" id="dl-del" type="button" style="margin-right:auto">🗑 Удалить</button>
@@ -178,6 +207,8 @@
   var options = [];                       // компании для выпадающих списков
   var comp = { items: [], total: 0 }, cli = { items: [], total: 0 };
   var editingComp = null, editingCli = null;
+  var view = 'cards', maxFileMb = 25, dataLoaded = false;
+  try { if (localStorage.getItem('cl_view') === 'list') view = 'list'; } catch(e){}
 
   function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
   var toastT;
@@ -217,11 +248,28 @@
       (c.full_name && c.full_name !== c.name ? '<div class="full">' + esc(c.full_name) + '</div>' : '') +
       row('Директор', c.director) + row('ИНН', c.inn) + row('ОКПО', c.okpo) + row('Адрес', c.address) + row('Телефон', c.phone) + row('Email', c.email) +
       (c.activity ? '<div class="chips"><span class="chip">' + esc(c.activity.length > 60 ? c.activity.slice(0, 60) + '…' : c.activity) + '</span></div>' : '') +
-      '<div class="chips"><button type="button" class="chip" data-clients="' + c.id + '" title="Показать клиентов компании">Клиенты: <b>' + c.clients_count + '</b></button></div></div>';
+      '<div class="chips"><button type="button" class="chip" data-clients="' + c.id + '" title="Показать клиентов компании">Клиенты: <b>' + c.clients_count + '</b></button>' +
+      (c.files_count ? '<span class="chip">📎 ' + c.files_count + '</span>' : '') + '</div></div>';
   }
+  function rowComp(c, i){
+    return '<tr tabindex="0" role="button" data-comp="' + i + '"><td class="nm">' + esc(c.name) + (c.full_name && c.full_name !== c.name ? '<div class="sub">' + esc(c.full_name) + '</div>' : '') + '</td>' +
+      '<td>' + esc(c.inn) + '</td><td>' + esc(c.okpo) + '</td><td>' + esc(c.director) + '</td><td>' + esc(c.phone) + '</td><td>' + esc(c.address) + '</td>' +
+      '<td><button type="button" class="chip" data-clients="' + c.id + '" title="Показать клиентов компании">' + c.clients_count + '</button></td>' +
+      '<td>' + (c.files_count ? '📎 ' + c.files_count : '') + '</td></tr>';
+  }
+  function rowCli(k, i){
+    return '<tr tabindex="0" role="button" data-cli="' + i + '"><td class="nm">' + esc(k.name) + '</td>' +
+      '<td>' + (k.company_id ? '<button type="button" class="chip" data-gocomp="' + k.company_id + '" title="Открыть компанию">🏢 ' + esc(k.company_name) + '</button>' : '<span class="sub">—</span>') + '</td>' +
+      '<td>' + esc(k.position) + '</td><td>' + esc(k.phone) + '</td><td>' + esc(k.email) + '</td><td>' + esc(k.passport) + '</td>' +
+      '<td>' + (k.files_count ? '📎 ' + k.files_count : '') + '</td></tr>';
+  }
+  function tableHtml(head, rows){ return '<table><thead><tr>' + head.map(function(h){ return '<th>' + h + '</th>'; }).join('') + '</tr></thead><tbody>' + rows + '</tbody></table>'; }
   function renderComp(){
-    $('comp-grid').innerHTML = comp.items.length ? comp.items.map(cardComp).join('')
-      : '<div class="empty">' + ($('comp-q').value.trim() ? 'Ничего не найдено' : 'Компаний пока нет. Нажмите «＋ Компания» или импортируйте из «Визы и договоры».') + '</div>';
+    var el = $('comp-grid'), emptyTxt = '<div class="empty">' + ($('comp-q').value.trim() ? 'Ничего не найдено' : 'Компаний пока нет. Нажмите «＋ Компания» или импортируйте из «Визы и договоры».') + '</div>';
+    el.className = view === 'list' && comp.items.length ? 'list' : 'cgrid';
+    el.innerHTML = !comp.items.length ? emptyTxt : view === 'list'
+      ? tableHtml(['Название','ИНН','ОКПО','Директор','Телефон','Адрес','Клиенты','Файлы'], comp.items.map(rowComp).join(''))
+      : comp.items.map(cardComp).join('');
     $('comp-more').hidden = comp.items.length >= comp.total;
   }
   function loadComp(append){
@@ -238,11 +286,15 @@
       (k.position ? '<div class="full">' + esc(k.position) + '</div>' : '') +
       row('Телефон', k.phone) + row('Email', k.email) + row('Гражданство', k.citizenship) + row('Паспорт', k.passport) +
       (k.notes ? '<div class="full">' + esc(k.notes.length > 100 ? k.notes.slice(0, 100) + '…' : k.notes) + '</div>' : '') +
-      '<div class="chips">' + (k.company_id ? '<button type="button" class="chip" data-gocomp="' + k.company_id + '" title="Открыть компанию">🏢 ' + esc(k.company_name) + '</button>' : '<span class="chip">без компании</span>') + '</div></div>';
+      '<div class="chips">' + (k.company_id ? '<button type="button" class="chip" data-gocomp="' + k.company_id + '" title="Открыть компанию">🏢 ' + esc(k.company_name) + '</button>' : '<span class="chip">без компании</span>') +
+      (k.files_count ? '<span class="chip">📎 ' + k.files_count + '</span>' : '') + '</div></div>';
   }
   function renderCli(){
-    $('cli-grid').innerHTML = cli.items.length ? cli.items.map(cardCli).join('')
-      : '<div class="empty">' + ($('cli-q').value.trim() || $('cli-company').value ? 'Ничего не найдено' : 'Клиентов пока нет. Нажмите «＋ Клиент».') + '</div>';
+    var el = $('cli-grid'), emptyTxt = '<div class="empty">' + ($('cli-q').value.trim() || $('cli-company').value ? 'Ничего не найдено' : 'Клиентов пока нет. Нажмите «＋ Клиент».') + '</div>';
+    el.className = view === 'list' && cli.items.length ? 'list' : 'cgrid';
+    el.innerHTML = !cli.items.length ? emptyTxt : view === 'list'
+      ? tableHtml(['ФИО','Компания','Должность','Телефон','Email','Паспорт','Файлы'], cli.items.map(rowCli).join(''))
+      : cli.items.map(cardCli).join('');
     $('cli-more').hidden = cli.items.length >= cli.total;
   }
   function loadCli(append){
@@ -253,8 +305,14 @@
       cli.items = append ? cli.items.concat(r.items) : r.items; cli.total = r.total; renderCli();
     }).catch(function(er){ $('cli-grid').innerHTML = '<div class="empty">' + esc(er.message) + '</div>'; });
   }
-  function loadCounts(){ return api('GET', '/api/clients/stats').then(function(s){ $('comp-count').textContent = s.companies; $('cli-count').textContent = s.clients; }).catch(function(){}); }
-  function reloadAll(){ return Promise.all([loadOptions(), loadComp(), loadCli(), loadCounts()]); }
+  function loadCounts(){ return api('GET', '/api/clients/stats').then(function(s){ $('comp-count').textContent = s.companies; $('cli-count').textContent = s.clients; maxFileMb = s.max_file_mb || maxFileMb; }).catch(function(){}); }
+  function setView(v){
+    view = v; try { localStorage.setItem('cl_view', v); } catch(e){}
+    Array.prototype.forEach.call(document.querySelectorAll('.viewsw button'), function(b){ b.classList.toggle('on', b.getAttribute('data-view') === v); });
+    if (dataLoaded) { renderComp(); renderCli(); }
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('.viewsw button'), function(b){ b.onclick = function(){ setView(b.getAttribute('data-view')); }; });
+  function reloadAll(){ return Promise.all([loadOptions(), loadComp(), loadCli(), loadCounts()]).then(function(r){ dataLoaded = true; return r; }); }
 
   var t1, t2;
   $('comp-q').addEventListener('input', function(){ clearTimeout(t1); t1 = setTimeout(function(){ loadComp(); }, 250); });
@@ -284,8 +342,56 @@
   }
   ['comp-grid','cli-grid'].forEach(function(id){
     $(id).addEventListener('click', onCardClick);
-    $(id).addEventListener('keydown', function(e){ if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('cc')) { e.preventDefault(); e.target.click(); } });
+    $(id).addEventListener('keydown', function(e){ if ((e.key === 'Enter' || e.key === ' ') && (e.target.classList.contains('cc') || e.target.tagName === 'TR')) { e.preventDefault(); e.target.click(); } });
   });
+
+  // ----- файлы в карточках -----
+  function formatSize(b){ return b < 1024 ? b + ' Б' : b < 1048576 ? Math.round(b / 1024) + ' КБ' : (b / 1048576).toFixed(1) + ' МБ'; }
+  function uploadFile(kind, id, file){
+    if (file.size > maxFileMb * 1048576) return Promise.reject(new Error('«' + file.name + '» больше ' + maxFileMb + ' МБ'));
+    return fetch('/api/clients/' + kind + '/' + id + '/files?name=' + encodeURIComponent(file.name), { method: 'POST', headers: {'Content-Type':'application/octet-stream'}, body: file })
+      .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ if (!r.ok) throw new Error(j.error || ('Ошибка ' + r.status)); return j; }); });
+  }
+  // kind: 'companies' | 'clients'; p: префикс id элементов ('c' или 'k'); errId — куда писать ошибки
+  function FilesBox(kind, p, errId){
+    var owner = null, pending = [];
+    var box = {
+      open: function(rec){ owner = rec; pending = []; $(p + '-addfile').value = ''; return box.render(); },
+      render: function(){
+        $(p + '-files-hint').textContent = owner ? 'До ' + maxFileMb + ' МБ на файл. Хранятся без срока.' : 'Файлы загрузятся после сохранения карточки. До ' + maxFileMb + ' МБ на файл.';
+        if (!owner) {
+          $(p + '-files').innerHTML = pending.length ? pending.map(function(f, i){ return '<div class="frow"><span class="fn">📎 ' + esc(f.name) + '</span><span class="sub">' + formatSize(f.size) + '</span><button type="button" class="btn danger sm" data-unpend="' + i + '" title="Убрать">✕</button></div>'; }).join('') : '<div class="frow"><span class="sub">Файлов нет</span></div>';
+          return Promise.resolve();
+        }
+        return api('GET', '/api/clients/' + kind + '/' + owner.id + '/files').then(function(list){
+          $(p + '-files').innerHTML = list.length ? list.map(function(f){
+            return '<div class="frow"><span class="fn" title="' + esc(f.name) + '">📎 ' + esc(f.name) + '</span><span class="sub">' + formatSize(f.size) + '</span>' +
+              '<a class="btn ghost sm" href="/api/clients/files/' + f.id + '" title="Скачать">⬇</a><button type="button" class="btn danger sm" data-fdel="' + f.id + '" title="Удалить файл">🗑</button></div>';
+          }).join('') : '<div class="frow"><span class="sub">Файлов нет</span></div>';
+        });
+      },
+      // после создания карточки догружаем выбранные заранее файлы; возвращает список ошибок
+      flush: function(id){
+        var errs = [];
+        return pending.reduce(function(chain, f){ return chain.then(function(){ return uploadFile(kind, id, f); }).catch(function(er){ errs.push(er.message); }); }, Promise.resolve()).then(function(){ pending = []; return errs; });
+      }
+    };
+    $(p + '-addfile').addEventListener('change', function(){
+      var files = Array.prototype.slice.call(this.files), inp = this; if (!files.length) return;
+      $(errId).textContent = '';
+      if (!owner) { pending = pending.concat(files); inp.value = ''; box.render(); return; }
+      files.reduce(function(chain, f){ return chain.then(function(){ return uploadFile(kind, owner.id, f); }); }, Promise.resolve())
+        .catch(function(er){ $(errId).textContent = er.message; })
+        .then(function(){ inp.value = ''; return Promise.all([box.render(), reloadAll()]); });
+    });
+    $(p + '-files').addEventListener('click', function(e){
+      var del = e.target.getAttribute('data-fdel'), un = e.target.getAttribute('data-unpend');
+      if (un != null) { pending.splice(Number(un), 1); box.render(); }
+      if (del && confirm('Удалить этот файл?')) api('DELETE', '/api/clients/files/' + del).then(function(){ return Promise.all([box.render(), reloadAll()]); }).catch(function(er){ $(errId).textContent = er.message; });
+    });
+    return box;
+  }
+  var compFiles = FilesBox('companies', 'c', 'dc-err'), cliFiles = FilesBox('clients', 'k', 'dl-err');
 
   // ----- диалог компании -----
   function openComp(c){
@@ -293,6 +399,7 @@
     $('dc-title').textContent = c ? c.name : 'Новая компания';
     COMP_FIELDS.forEach(function(f){ $('c-' + f).value = c ? (c[f] || '') : ''; });
     $('dc-del').hidden = !c;
+    compFiles.open(c || null);
     $('dlg-comp').showModal(); if (!c) $('c-name').focus();
   }
   $('btn-add-comp').onclick = function(){ openComp(null); };
@@ -300,11 +407,13 @@
   $('dc-save').onclick = function(){
     var body = {}; COMP_FIELDS.forEach(function(f){ body[f] = $('c-' + f).value; });
     api(editingComp ? 'PATCH' : 'POST', '/api/clients/companies' + (editingComp ? '/' + editingComp.id : ''), body)
-      .then(function(){ $('dlg-comp').close(); toast('Сохранено'); return reloadAll(); }).catch(function(er){ $('dc-err').textContent = er.message; });
+      .then(function(saved){ return editingComp ? [] : compFiles.flush(saved.id); })
+      .then(function(errs){ $('dlg-comp').close(); toast(errs.length ? 'Сохранено, но не все файлы загрузились: ' + errs.join('; ') : 'Сохранено'); return reloadAll(); })
+      .catch(function(er){ $('dc-err').textContent = er.message; });
   };
   $('dc-del').onclick = function(){
     var n = editingComp.clients_count;
-    if (!confirm('Удалить компанию «' + editingComp.name + '»?' + (n ? '\nКлиенты (' + n + ') останутся в базе, но без компании.' : '') + '\nЭто нельзя отменить.')) return;
+    if (!confirm('Удалить компанию «' + editingComp.name + '»?' + (n ? '\nКлиенты (' + n + ') останутся в базе, но без компании.' : '') + (editingComp.files_count ? '\nФайлы компании (' + editingComp.files_count + ') будут удалены.' : '') + '\nЭто нельзя отменить.')) return;
     api('DELETE', '/api/clients/companies/' + editingComp.id).then(function(){ $('dlg-comp').close(); toast('Компания удалена'); return reloadAll(); }).catch(function(er){ $('dc-err').textContent = er.message; });
   };
   $('btn-import').onclick = function(){
@@ -320,6 +429,7 @@
     CLI_FIELDS.forEach(function(f){ $('k-' + f).value = k ? (k[f] || '') : ''; });
     $('k-company_id').innerHTML = companySelectHtml(k ? k.company_id : presetCompany);
     $('dl-del').hidden = !k;
+    cliFiles.open(k || null);
     $('dlg-cli').showModal(); if (!k) $('k-name').focus();
   }
   $('btn-add-cli').onclick = function(){ var f = $('cli-company').value; openCli(null, f && f !== 'none' ? f : ''); };
@@ -327,10 +437,12 @@
   $('dl-save').onclick = function(){
     var body = {}; CLI_FIELDS.forEach(function(f){ body[f] = $('k-' + f).value; }); body.company_id = $('k-company_id').value || null;
     api(editingCli ? 'PATCH' : 'POST', '/api/clients/clients' + (editingCli ? '/' + editingCli.id : ''), body)
-      .then(function(){ $('dlg-cli').close(); toast('Сохранено'); return reloadAll(); }).catch(function(er){ $('dl-err').textContent = er.message; });
+      .then(function(saved){ return editingCli ? [] : cliFiles.flush(saved.id); })
+      .then(function(errs){ $('dlg-cli').close(); toast(errs.length ? 'Сохранено, но не все файлы загрузились: ' + errs.join('; ') : 'Сохранено'); return reloadAll(); })
+      .catch(function(er){ $('dl-err').textContent = er.message; });
   };
   $('dl-del').onclick = function(){
-    if (!confirm('Удалить клиента «' + editingCli.name + '»?\nЭто нельзя отменить.')) return;
+    if (!confirm('Удалить клиента «' + editingCli.name + '»?' + (editingCli.files_count ? '\nФайлы клиента (' + editingCli.files_count + ') будут удалены.' : '') + '\nЭто нельзя отменить.')) return;
     api('DELETE', '/api/clients/clients/' + editingCli.id).then(function(){ $('dlg-cli').close(); toast('Клиент удалён'); return reloadAll(); }).catch(function(er){ $('dl-err').textContent = er.message; });
   };
 
@@ -339,6 +451,7 @@
   $('settings-close').onclick = function(){ $('dlg-settings').close(); };
   $('theme-grid').addEventListener('click', function(e){ var b = e.target.closest('[data-theme]'); if (b) AppTheme.apply(b.getAttribute('data-theme')); });
 
+  setView(view);
   showTab((location.hash || '').replace('#','') === 'cli' ? 'cli' : 'comp');
   reloadAll();
 })();

@@ -2,6 +2,8 @@
 const express = require('express');
 const DEFAULT_VISA_COMPANIES = require('./public/vd-default-companies.js');
 
+const MAX_FILE_MB = Math.max(1, Number(process.env.CL_MAX_FILE_MB) || 25);
+
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS cl_companies (
   id         SERIAL PRIMARY KEY,
@@ -36,6 +38,19 @@ CREATE TABLE IF NOT EXISTS cl_clients (
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+-- Файлы лежат прямо в PostgreSQL и хранятся без срока (в отличие от исходящих писем).
+CREATE TABLE IF NOT EXISTS cl_files (
+  id         BIGSERIAL PRIMARY KEY,
+  company_id INTEGER REFERENCES cl_companies(id) ON DELETE CASCADE,
+  client_id  INTEGER REFERENCES cl_clients(id) ON DELETE CASCADE,
+  name       TEXT NOT NULL,
+  size       INTEGER NOT NULL,
+  data       BYTEA NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CHECK ((company_id IS NULL) <> (client_id IS NULL))
+);
+CREATE INDEX IF NOT EXISTS cl_files_company ON cl_files (company_id);
+CREATE INDEX IF NOT EXISTS cl_files_client ON cl_files (client_id);
 CREATE INDEX IF NOT EXISTS cl_clients_company ON cl_clients (company_id);
 CREATE INDEX IF NOT EXISTS cl_clients_name ON cl_clients (LOWER(name));
 `;
@@ -49,6 +64,12 @@ const COMPANY_FIELDS = { name: 200, full_name: 400, inn: 50, okpo: 50, director:
 const CLIENT_FIELDS = { name: 200, position: 200, phone: 100, email: 200, citizenship: 100, passport: 100, notes: 2000 };
 
 const str = (v, max) => String(v ?? '').trim().slice(0, max);
+
+// Имя файла без путей и служебных символов.
+function safeName(v) {
+  const t = String(v ?? '').replace(/[\\/:*?"<>|\x00-\x1f]/g, '_').replace(/\s+/g, ' ').trim().replace(/^\.+/, '').slice(0, 200);
+  return t || 'file';
+}
 
 function pick(body, fields) {
   const out = {};
@@ -85,7 +106,8 @@ function createClientsRouter(pool) {
   // ---------- Компании ----------
 
   const COMPANY_SELECT = `
-    SELECT c.*, (SELECT COUNT(*)::int FROM cl_clients k WHERE k.company_id = c.id) AS clients_count
+    SELECT c.*, (SELECT COUNT(*)::int FROM cl_clients k WHERE k.company_id = c.id) AS clients_count,
+           (SELECT COUNT(*)::int FROM cl_files f WHERE f.company_id = c.id) AS files_count
       FROM cl_companies c`;
 
   router.get('/companies', wrap(async (req, res) => {
@@ -174,7 +196,8 @@ function createClientsRouter(pool) {
   // ---------- Клиенты ----------
 
   const CLIENT_SELECT = `
-    SELECT k.*, c.name AS company_name
+    SELECT k.*, c.name AS company_name,
+           (SELECT COUNT(*)::int FROM cl_files f WHERE f.client_id = k.id) AS files_count
       FROM cl_clients k LEFT JOIN cl_companies c ON c.id = k.company_id`;
 
   router.get('/clients', wrap(async (req, res) => {
@@ -248,8 +271,52 @@ function createClientsRouter(pool) {
 
   router.get('/stats', wrap(async (req, res) => {
     const { rows } = await pool.query(
-      'SELECT (SELECT COUNT(*)::int FROM cl_companies) AS companies, (SELECT COUNT(*)::int FROM cl_clients) AS clients');
-    res.json(rows[0]);
+      `SELECT (SELECT COUNT(*)::int FROM cl_companies) AS companies, (SELECT COUNT(*)::int FROM cl_clients) AS clients,
+              (SELECT COUNT(*)::int FROM cl_files) AS files, (SELECT COALESCE(SUM(size),0)::bigint FROM cl_files) AS bytes`);
+    res.json({ ...rows[0], bytes: Number(rows[0].bytes), max_file_mb: MAX_FILE_MB });
+  }));
+
+  // ---------- Файлы (к компаниям и клиентам) ----------
+
+  const FILE_COLS = 'id, name, size, created_at';
+
+  for (const [path, col] of [['companies', 'company_id'], ['clients', 'client_id']]) {
+    router.get(`/${path}/:id(\\d+)/files`, wrap(async (req, res) => {
+      const { rows } = await pool.query(`SELECT ${FILE_COLS} FROM cl_files WHERE ${col} = $1 ORDER BY id`, [Number(req.params.id)]);
+      res.json(rows);
+    }));
+
+    // Загрузка: тело запроса = сам файл, имя в ?name=
+    router.post(`/${path}/:id(\\d+)/files`,
+      express.raw({ type: () => true, limit: MAX_FILE_MB + 'mb' }),
+      wrap(async (req, res) => {
+        const body = req.body;
+        if (!Buffer.isBuffer(body) || !body.length) return res.status(400).json({ error: 'Файл пустой' });
+        try {
+          const { rows } = await pool.query(
+            `INSERT INTO cl_files(${col}, name, size, data) VALUES($1,$2,$3,$4) RETURNING ${FILE_COLS}`,
+            [Number(req.params.id), safeName(req.query.name), body.length, body]);
+          res.status(201).json(rows[0]);
+        } catch (err) {
+          if (err.code === '23503') return res.status(404).json({ error: path === 'companies' ? 'Компания не найдена' : 'Клиент не найден' });
+          throw err;
+        }
+      }));
+  }
+
+  router.get('/files/:id(\\d+)', wrap(async (req, res) => {
+    const { rows } = await pool.query('SELECT name, data FROM cl_files WHERE id = $1', [Number(req.params.id)]);
+    if (!rows[0]) return res.status(404).json({ error: 'Файл не найден' });
+    res.set('Content-Type', 'application/octet-stream');
+    res.set('X-Content-Type-Options', 'nosniff');
+    res.set('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(rows[0].name)}`);
+    res.send(rows[0].data);
+  }));
+
+  router.delete('/files/:id(\\d+)', wrap(async (req, res) => {
+    const r = await pool.query('DELETE FROM cl_files WHERE id = $1', [Number(req.params.id)]);
+    if (!r.rowCount) return res.status(404).json({ error: 'Файл не найден' });
+    res.json({ ok: true });
   }));
 
   return router;
