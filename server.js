@@ -4,6 +4,7 @@ const { Pool } = require('pg');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const { createOutgoingRouter, initOutgoingSchema, purgeExpiredFiles } = require('./outgoing');
 const { createClientsRouter, initClientsSchema } = require('./clients');
+const { createVisasRouter, initVisasSchema, migrateVisasFromStorage } = require('./visas');
 
 const PORT = Number(process.env.PORT || 3000);
 const HOST = '0.0.0.0';
@@ -28,7 +29,9 @@ async function initDb() {
   `);
   await initOutgoingSchema(pool);
   await initClientsSchema(pool);
-  console.log('PostgreSQL connected, app_storage and outgoing-letters and clients tables are ready.');
+  await initVisasSchema(pool);
+  await migrateVisasFromStorage(pool);
+  console.log('PostgreSQL connected, app_storage and outgoing-letters, clients and visas tables are ready.');
 }
 
 const app = express();
@@ -164,6 +167,9 @@ app.delete('/api/storage', async (req, res) => {
 
 // ---------- /api/outgoing (учёт исходящих номеров) ----------
 app.use('/api/outgoing', createOutgoingRouter(pool));
+
+// ---------- /api/visas (учёт виз: одна строка на визу) ----------
+app.use('/api/visas', createVisasRouter(pool));
 
 // ---------- /api/clients (база клиентов: компании и клиенты) ----------
 app.use('/api/clients', createClientsRouter(pool));

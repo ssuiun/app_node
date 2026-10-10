@@ -205,7 +205,7 @@
   </style>
 </head>
 <body>
-<script>window.RAILWAY_STORAGE_CONFIG={"keys": ["vd_db3", "vd_visas", "vd_hook", "vd_secret"], "prefixes": ["vd_tpl_", "vd_tplname_"]};</script>
+<script>window.RAILWAY_STORAGE_CONFIG={"keys": ["vd_db3", "vd_hook", "vd_secret"], "prefixes": ["vd_tpl_", "vd_tplname_"]};</script>
 <script src="/railway-sync.js"></script>
 <script src="/vd-default-companies.js"></script>
 
@@ -739,12 +739,55 @@ const VISA_STATUSES = [
 let VDB = [];
 let editingVisaId = null;
 
-function loadVDB() {
-  const s = localStorage.getItem('vd_visas');
-  if (s) { try { VDB = JSON.parse(s); return; } catch(e){} }
-  VDB = [];
+/* ═══ УЧЁТ ВИЗ: общая база (каждая виза — отдельная строка на сервере) ═══ */
+let lastVisaJson = '';
+let visaEpoch = 0;          // растёт при каждом нашем изменении: устаревший ответ опроса отбрасывается
+let visaOnline = true;
+let visaUpdatedAt = null;
+
+async function visaReq(method, url, body) {
+  const r = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) { const e = new Error(j.error || ('Ошибка ' + r.status)); e.status = r.status; throw e; }
+  return j;
 }
-function saveVDB() { localStorage.setItem('vd_visas', JSON.stringify(VDB)); }
+function renderVisaHint() {
+  const el = document.getElementById('viz-sync-hint');
+  if (!el) return;
+  el.textContent = visaOnline
+    ? '🔄 общая база · обновляется автоматически' + (visaUpdatedAt ? ' · ' + pad(visaUpdatedAt.getHours()) + ':' + pad(visaUpdatedAt.getMinutes()) + ':' + pad(visaUpdatedAt.getSeconds()) : '')
+    : '⚠️ нет связи с сервером — список может быть неактуален';
+}
+// Забирает список с сервера; перерисовывает только если он изменился.
+async function refreshVisas(force) {
+  const epoch = visaEpoch;
+  try {
+    const r = await fetch('/api/visas');
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const list = await r.json();
+    visaOnline = true; visaUpdatedAt = new Date();
+    if (epoch !== visaEpoch) return;                       // за время запроса сами что-то поменяли — подождём следующего опроса
+    const j = JSON.stringify(list);
+    if (force || j !== lastVisaJson) { lastVisaJson = j; VDB = list; renderVisas(); }
+  } catch (e) { visaOnline = false; }
+  renderVisaHint();
+}
+// Однократно переносим в общую базу то, что лежало в этом браузере (старый локальный список).
+async function importLegacyVisas() {
+  try {
+    if (localStorage.getItem('vd_visas_imported') === '1') return;
+    let local = [];
+    try { local = JSON.parse(localStorage.getItem('vd_visas') || '[]'); } catch (e) {}
+    if (Array.isArray(local) && local.length) await visaReq('POST', '/api/visas/import', { records: local });
+    localStorage.setItem('vd_visas_imported', '1');
+  } catch (e) { /* попробуем при следующем открытии страницы */ }
+}
+async function initVisas() {
+  await importLegacyVisas();
+  await refreshVisas(true);
+  setInterval(() => { if (!document.hidden) refreshVisas(); }, 5000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshVisas(); });
+}
 
 function isoToday() {
   const d = new Date();
@@ -787,7 +830,7 @@ function statusMeta(v) {
   return VISA_STATUSES.find(s => s.v === v) || VISA_STATUSES[0];
 }
 
-function submitVisaForm() {
+async function submitVisaForm() {
   const company = document.getElementById('viz-co').value.trim();
   const fio = document.getElementById('viz-fio').value.trim();
   const num = document.getElementById('viz-num').value.trim();
@@ -799,28 +842,32 @@ function submitVisaForm() {
 
   if (!company || !fio) { toast('Укажите компанию и ФИО', 'err'); return; }
 
-  if (editingVisaId) {
-    const rec = VDB.find(x => x.id === editingVisaId);
-    if (!rec) { cancelEditVisa(); return; }
-    Object.assign(rec, { company, fio, num, status, type, submit, review, exec, synced: false });
-    saveVDB();
-    renderVisas();
-    toast('Запись обновлена', 'ok');
-    syncVisa(rec.id);
-    cancelEditVisa();
-  } else {
-    const rec = {
-      id: 'v' + Date.now(),
-      company, fio, num, status, type,
-      submit, review, exec,
-      synced: false
-    };
-    VDB.unshift(rec);
-    saveVDB();
-    renderVisas();
-    toast('Запись добавлена', 'ok');
-    syncVisa(rec.id);
+  const btn = document.getElementById('viz-submit-btn');
+  btn.disabled = true;
+  visaEpoch++;
+  try {
+    if (editingVisaId) {
+      const saved = await visaReq('PATCH', '/api/visas/' + encodeURIComponent(editingVisaId), { company, fio, num, status, type, submit, review, exec, synced: false });
+      const i = VDB.findIndex(x => x.id === saved.id);
+      if (i >= 0) VDB[i] = saved; else VDB.unshift(saved);
+      renderVisas();
+      toast('Запись обновлена', 'ok');
+      syncVisa(saved.id);
+      cancelEditVisa();
+    } else {
+      const saved = await visaReq('POST', '/api/visas', { company, fio, num, status, type, submit, review, exec });
+      VDB.unshift(saved);
+      renderVisas();
+      toast('Запись добавлена', 'ok');
+      syncVisa(saved.id);
+    }
+  } catch (e) {
+    if (e.status === 404) { toast('Эту запись уже удалили. Список обновлён.', 'err'); cancelEditVisa(); refreshVisas(true); }
+    else toast('Не удалось сохранить: ' + e.message, 'err');
+    btn.disabled = false;
+    return;
   }
+  btn.disabled = false;
 
   document.getElementById('viz-fio').value = '';
   document.getElementById('viz-num').value = '';
@@ -855,15 +902,20 @@ function cancelEditVisa() {
   document.getElementById('viz-cancel-btn').style.display = 'none';
 }
 
-function delVisa(id) {
+async function delVisa(id) {
   const r = VDB.find(x => x.id === id);
   if (!r) return;
-  if (!confirm(`Удалить запись "${r.fio}"? В самой Google Таблице строку нужно будет удалить вручную.`)) return;
+  if (!confirm(`Удалить запись "${r.fio}" для всех сотрудников? В самой Google Таблице строку нужно будет удалить вручную.`)) return;
+  visaEpoch++;
+  try {
+    await visaReq('DELETE', '/api/visas/' + encodeURIComponent(id));
+  } catch (e) {
+    if (e.status !== 404) { toast('Не удалось удалить: ' + e.message, 'err'); return; }
+  }
   if (editingVisaId === id) cancelEditVisa();
   VDB = VDB.filter(x => x.id !== id);
-  saveVDB();
   renderVisas();
-  toast('Запись удалена локально', 'ok');
+  toast('Запись удалена', 'ok');
 }
 
 /* ═══ ОТЧЁТ ═══ */
@@ -1005,7 +1057,8 @@ async function syncVisa(id) {
     const data = await res.json().catch(() => null);
     if (res.ok && data && data.ok) {
       rec.synced = true;
-      saveVDB();
+      visaEpoch++;
+      visaReq('PATCH', '/api/visas/' + encodeURIComponent(rec.id), { synced: true }).catch(() => {});
       renderVisas();
       updateConnDot('ok');
       toast('Запись отправлена в Google Таблицу', 'ok');
@@ -1754,7 +1807,7 @@ function checkLibraries() {
     toast('Не удалось загрузить библиотеки для генерации .docx. Проверьте интернет-соединение и обновите страницу (F5).', 'err');
   }
 }
-document.addEventListener('DOMContentLoaded', ()=>{ loadDB(); fillSels(); renderComp(); initEmbeddedTemplates(); initTrudDates(); setTimeout(checkLibraries, 1200); loadVDB(); initVizForm(); renderVisas(); });
+document.addEventListener('DOMContentLoaded', ()=>{ loadDB(); fillSels(); renderComp(); initEmbeddedTemplates(); initTrudDates(); setTimeout(checkLibraries, 1200); initVizForm(); renderVisas(); initVisas(); });
 </script>
 </body>
 </html>
