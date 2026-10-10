@@ -34,16 +34,8 @@
   body.tool-open .agentation-host{display:none}
   .bsp-two-col{grid-template-columns:minmax(0,420px)}
   /* Настройки оформления (темы) */
-  html[data-app-theme]:not([data-app-theme=red]) .bsp-sidebar{background-image:linear-gradient(180deg,var(--hdr1),var(--hdr2))}
-  .bsp-nav a.active{background:linear-gradient(135deg,var(--acc,#9c2430),color-mix(in srgb,var(--acc,#9c2430) 58%,#000))}
-  /* светлая тема: тёмный текст в боковом меню */
-  html[data-app-theme=light] .bsp-nav a{color:#5c4530}
-  html[data-app-theme=light] .bsp-nav a:hover{background:rgba(0,0,0,.06);color:#2b1a1a}
-  html[data-app-theme=light] .bsp-nav a.active{color:#fff}
-  html[data-app-theme=light] .bsp-quote{background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.1);color:#5c4530}
-  html[data-app-theme=light] .bsp-user{border-top-color:rgba(0,0,0,.1)}
-  html[data-app-theme=light] .bsp-user .name{color:#2b1a1a}
-  html[data-app-theme=light] .bsp-user .role{color:#82735b}
+  /* Боковая панель не зависит от темы: возвращаем ей исходную палитру */
+  .bsp-sidebar{--bsp-red-1:#7a1420;--bsp-gold:#c9a353;--bsp-cream:#faf6ef;--bsp-cream-2:#f3ead9;--bsp-paper:#fffdf8;--bsp-border:#e7d9c0;--bsp-ink:#2b1c14;--bsp-ink-soft:#5b4638;--bsp-muted:#8a7561}
   .home-tools{display:flex;justify-content:flex-end;margin-bottom:.8rem}
   .set-btn{border:1px solid var(--bsp-border);background:var(--bsp-paper);color:var(--bsp-ink-soft);border-radius:var(--bsp-radius-sm);padding:.4rem .8rem;font:inherit;font-size:.82rem;font-weight:600;cursor:pointer}
   .set-btn:hover{border-color:var(--bsp-gold);color:var(--bsp-red-1)}
