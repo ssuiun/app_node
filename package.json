@@ -4,12 +4,22 @@
   "private": true,
   "description": "Static document tools prepared for Railway",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test:outgoing": "node --test test/outgoing.test.js",
+    "build:agentation": "esbuild src/agentation-entry.jsx --bundle --minify --format=iife --jsx=automatic --define:process.env.NODE_ENV=\\\"production\\\" --outfile=public/vendor/agentation.js",
+    "dev": "node --env-file=.env server.js"
   },
   "dependencies": {
+    "archiver": "^8.0.0",
     "ejs": "^3.1.10",
     "express": "^4.22.3",
     "http-proxy-middleware": "^4.2.0",
     "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "agentation": "^3.1.2",
+    "esbuild": "^0.28.2",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
   }
 }

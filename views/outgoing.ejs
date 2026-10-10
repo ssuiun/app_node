@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Исходящие номера</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root{--bg:#faf6ef;--bg2:#f3ead9;--card:#fffdf8;--card2:#f3ead9;--border:#e7d9c0;--border2:#d9c6a3;--acc:#9c1a22;--acc2:#c9a353;--acc3:#2e8b57;--txt:#2b1c14;--txt2:#6b5644;--muted:#8a7561;--r:14px;--rs:8px;--tr:.22s cubic-bezier(.4,0,.2,1);--hdr1:#8c1220;--hdr2:#5c0f14;--hdr-txt:#fff;--glow:0 0 18px rgba(156,26,34,.22);--warn:#a8720f}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  [hidden]{display:none!important}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;line-height:1.6}
+  /* HEADER (как в «Визы и договоры») */
+  header{background:linear-gradient(135deg,var(--hdr1),var(--hdr2));border-bottom:1px solid var(--border);padding:0 1.5rem;position:sticky;top:0;z-index:100;color:var(--hdr-txt);transition:background .3s ease}
+  .hdr{max-width:1320px;margin:0 auto;display:flex;align-items:center;gap:1.5rem;min-height:62px;flex-wrap:wrap;padding:.4rem 0}
+  .logo{display:flex;align-items:center;gap:.6rem;font-weight:700;font-size:1.05rem;white-space:nowrap}
+  .logo-i{width:34px;height:34px;background:linear-gradient(135deg,var(--acc),var(--acc2));border:1.5px solid var(--acc2);border-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:var(--glow2,none)}
+  .tabs{display:flex;gap:.2rem;margin-left:auto;flex-wrap:wrap}
+  .tb{padding:.45rem 1rem;border:1px solid transparent;background:transparent;color:color-mix(in srgb,var(--hdr-txt) 78%,transparent);cursor:pointer;border-radius:var(--rs);font:inherit;font-size:.83rem;font-weight:500;transition:color var(--tr),background var(--tr);white-space:nowrap;text-decoration:none;display:inline-block}
+  .tb:hover{color:var(--hdr-txt);background:color-mix(in srgb,var(--hdr-txt) 12%,transparent)}
+  .tb.on{color:#fff;background:linear-gradient(135deg,var(--acc),var(--acc2));box-shadow:var(--glow);font-weight:700}
+  .btn-settings{flex-shrink:0;padding:.42rem .6rem;font-size:1rem;margin-left:-.5rem}
+  .badge{display:inline-block;background:color-mix(in srgb,var(--hdr-txt) 18%,transparent);border-radius:20px;padding:0 6px;font-size:.72rem;margin-left:4px}
+  /* LAYOUT */
+  .wrap{max-width:1320px;margin:0 auto;padding:1.5rem 1.75rem}
+  .panel{display:none}.panel.on{display:block}
+  .ptitle{display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:1.1rem}
+  .ptitle h1{font-size:1.7rem;font-weight:800;letter-spacing:-.01em;line-height:1.2}
+  .ptitle p{color:var(--txt2);font-size:.87rem}
+  .card{background:var(--card);border:1px solid var(--border);border-top:2px solid var(--acc2);border-radius:var(--r);padding:1.2rem}
+  /* FORM */
+  label{display:block;font-size:.8rem;font-weight:500;color:var(--txt2);margin:.8rem 0 .3rem}
+  input,select,textarea{width:100%;padding:.6rem .8rem;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);color:var(--txt);font:inherit;font-size:.88rem;outline:none}
+  input:focus,select:focus,textarea:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(156,26,34,.15)}
+  textarea{resize:vertical;min-height:64px}
+  .row{display:flex;gap:.7rem}.row>*{flex:1}
+  .check{display:flex;align-items:center;gap:.5rem;margin-top:.9rem;font-size:.84rem}.check input{width:auto}
+  .hint{color:var(--muted);font-size:.76rem;margin-top:.3rem}
+  .err{color:#b3261e;font-size:.82rem;margin-top:.6rem;min-height:1em}
+  /* BUTTONS */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;padding:.6rem 1.2rem;border:none;border-radius:var(--rs);cursor:pointer;font:inherit;font-size:.87rem;font-weight:600;text-decoration:none;white-space:nowrap;background:linear-gradient(135deg,var(--acc),color-mix(in srgb,var(--acc) 62%,#000));color:#fff;transition:filter var(--tr),transform 160ms}
+  .btn:hover{filter:brightness(1.1)}.btn:active{transform:translateY(1px)}.btn:disabled{opacity:.5;pointer-events:none}
+  .btn.ghost{background:var(--card);color:var(--txt);border:1px solid var(--border2)}
+  .btn.danger{background:var(--card);color:#b3261e;border:1px solid #e3b4b0}
+  .btn.sm{padding:.25rem .65rem;font-size:.76rem}
+  /* BANNER */
+  .banner{display:none;background:color-mix(in srgb,var(--acc2) 18%,var(--card));border:1px solid var(--acc2);border-radius:var(--r);padding:.8rem 1.1rem;margin-bottom:1.1rem;font-size:.88rem;color:var(--txt)}
+  .banner.on{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+  .banner .msg{flex:1;min-width:240px}
+  .banner .acts{display:flex;gap:.5rem;flex-wrap:wrap}
+  /* JOURNAL */
+  .filters{display:grid;grid-template-columns:2fr 1.4fr 1fr 1fr;gap:.6rem;margin-bottom:.9rem}
+  @media(max-width:900px){.filters{grid-template-columns:1fr 1fr}}
+  .tbl-wrap{overflow:auto}
+  table{width:100%;border-collapse:collapse;font-size:.85rem}
+  th{text-align:left;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:.5rem;border-bottom:2px solid var(--border);white-space:nowrap}
+  td{padding:.55rem .5rem;border-bottom:1px solid var(--border);vertical-align:top}
+  tr:hover td{background:rgba(201,163,83,.07)}
+  td.num{font-weight:800;color:var(--acc);white-space:nowrap;font-variant-numeric:tabular-nums}
+  tr.void td{color:var(--muted)}tr.void td.main{text-decoration:line-through}
+  tr.void td.num::after{content:' аннулировано';font-size:.66rem;font-weight:600;color:#b3261e}
+  .sub{color:var(--muted);font-size:.76rem}
+  td.act{white-space:nowrap;text-align:right}
+  .files-chip{display:inline-block;border-radius:20px;padding:0 .55rem;font-size:.76rem;background:var(--bg2);border:1px solid var(--border2);cursor:pointer}
+  .files-chip.soon{background:color-mix(in srgb,var(--acc2) 22%,var(--card));border-color:var(--acc2);color:var(--txt);font-weight:600}
+  .pager{display:flex;align-items:center;justify-content:space-between;margin-top:.8rem;font-size:.82rem;color:var(--muted)}
+  .empty{padding:1.6rem;text-align:center;color:var(--muted)}
+  /* COMPANIES */
+  .toolbar{display:flex;gap:.7rem;margin-bottom:1rem;flex-wrap:wrap;align-items:center}.toolbar input{max-width:380px}
+  .viewsw{display:inline-flex;margin-left:auto;border:1px solid var(--border2);border-radius:var(--rs);overflow:hidden;flex-shrink:0}
+  .viewsw button{border:none;background:var(--card);color:var(--txt2);padding:.45rem .8rem;font:inherit;font-size:.8rem;font-weight:600;cursor:pointer}
+  .viewsw button+button{border-left:1px solid var(--border2)}
+  .viewsw button.on{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff}
+  .list{overflow:auto;background:var(--card);border:1px solid var(--border);border-top:2px solid var(--acc2);border-radius:var(--r)}
+  .list .gear{border:none;background:none;cursor:pointer;font-size:1rem;color:var(--muted);padding:0 .2rem}
+  .list .gear:hover{color:var(--acc)}
+  tr[data-co]{cursor:pointer}
+  tr[data-co]:hover td{background:color-mix(in srgb,var(--acc2) 10%,transparent)}
+  tr:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
+  .cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:.9rem}
+  .cc{background:var(--card);border:1px solid var(--border);border-top:2px solid var(--acc2);border-radius:var(--r);padding:1rem 1.1rem;cursor:pointer;transition:border-color var(--tr),transform var(--tr),box-shadow var(--tr);display:flex;flex-direction:column;gap:.55rem}
+  .cc:hover{border-color:var(--acc);transform:translateY(-2px);box-shadow:0 10px 24px -14px rgba(60,20,10,.45)}
+  .cc:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+  .cc .top{display:flex;justify-content:space-between;gap:.5rem;align-items:flex-start}
+  .cc .nm{font-weight:700;font-size:.95rem;line-height:1.3}
+  .cc .meta{display:flex;gap:.4rem;flex-wrap:wrap}
+  .chip{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:0 .6rem;font-size:.74rem;color:var(--txt2)}
+  .chip b{color:var(--acc)}
+  .cc .gear{border:none;background:none;cursor:pointer;font-size:1rem;color:var(--muted);padding:0 .2rem}
+  .cc .gear:hover{color:var(--acc)}
+  .crumbs{display:flex;align-items:center;gap:.6rem;margin-bottom:.8rem;flex-wrap:wrap}
+  .cd-actions{display:flex;gap:.5rem;flex-wrap:wrap}
+  /* DIALOGS */
+  dialog{border:1px solid var(--border);border-radius:var(--r);padding:1.3rem;width:min(520px,94vw);background:var(--card);color:var(--txt);margin:auto}
+  dialog::backdrop{background:rgba(30,10,8,.5)}
+  dialog h3{font-size:1.15rem;margin-bottom:.2rem}
+  .dlg-actions{display:flex;justify-content:flex-end;gap:.5rem;margin-top:1.1rem;flex-wrap:wrap}
+  .got{background:color-mix(in srgb,var(--acc3) 16%,var(--card));border:1px solid var(--acc3);border-radius:var(--rs);padding:1rem 1.1rem;text-align:center}
+  .got .big{font-size:1.7rem;font-weight:800;color:var(--acc3);line-height:1.2;margin:.3rem 0}
+  .next{background:var(--bg2);border:1px dashed var(--acc2);border-radius:var(--rs);padding:.6rem 1rem;margin-top:.7rem;text-align:center}
+  .next small{display:block;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.08em}
+  .next b{font-size:1.8rem;color:var(--acc);font-variant-numeric:tabular-nums}
+  .flist{margin-top:.5rem;border:1px solid var(--border);border-radius:var(--rs);background:var(--bg2)}
+  .frow{display:flex;align-items:center;gap:.5rem;padding:.45rem .7rem;border-top:1px solid var(--border);font-size:.82rem}
+  .frow:first-child{border-top:none}
+  .frow .fn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .frow .left{color:var(--muted);font-size:.72rem;white-space:nowrap}
+  .frow .left.soon{color:var(--warn);font-weight:700}
+  /* НАСТРОЙКИ ОФОРМЛЕНИЯ (как в остальных разделах) */
+  .theme-grid{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin-top:.5rem}
+  .theme-opt{display:flex;align-items:center;gap:.6rem;padding:.7rem .85rem;border:1px solid var(--border);border-radius:var(--rs);cursor:pointer;transition:border-color var(--tr),background var(--tr);font-size:.85rem;color:var(--txt2);background:none;font-family:inherit;text-align:left}
+  .theme-opt:hover{border-color:var(--border2);color:var(--txt)}
+  .theme-opt.sel{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 12%,transparent);color:var(--txt)}
+  .theme-sw{width:26px;height:26px;border-radius:50%;flex-shrink:0;border:2px solid rgba(255,255,255,.25)}
+  .toast{position:fixed;bottom:1.2rem;left:50%;transform:translateX(-50%);background:#2b1c14;color:#fff;padding:.6rem 1.1rem;border-radius:var(--rs);font-size:.85rem;opacity:0;pointer-events:none;transition:opacity .25s;z-index:300}
+  .toast.on{opacity:1}
+</style>
+<script src="/app-theme.js" data-key="out_theme"></script>
+</head>
+<body>
+<header id="app-header">
+  <div class="hdr">
+    <div class="logo"><div class="logo-i" aria-hidden="true"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" fill="none" stroke-width="7" stroke-linecap="round" style="width:62%;height:62%"><circle cx="50" cy="50" r="44"/><circle cx="50" cy="50" r="18"/><line x1="50" y1="6" x2="50" y2="94"/><line x1="6" y1="50" x2="94" y2="50"/><line x1="18.5" y1="18.5" x2="81.5" y2="81.5"/><line x1="81.5" y1="18.5" x2="18.5" y2="81.5"/></svg></div>Исходящие номера</div>
+    <nav class="tabs">
+      <button class="tb on" id="tab-journal" type="button">📨 Журнал</button>
+      <button class="tb" id="tab-comp" type="button">🏢 Компании <span class="badge" id="comp-count">0</span></button>
+      <a class="tb" id="tab-zip" href="/api/outgoing/archive.zip" title="Журнал и все файлы всех компаний одним архивом">⬇ Скачать всё архивом</a>
+    </nav>
+    <button class="btn ghost btn-settings" id="btn-settings" type="button" title="Настройки оформления" aria-label="Настройки оформления">⚙️</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="banner" id="banner" role="status">
+    <div class="msg" id="banner-msg"></div>
+    <div class="acts">
+      <a class="btn sm" id="banner-zip" href="/api/outgoing/archive.zip?expiring=1">⬇ Скачать эти файлы</a>
+      <button class="btn ghost sm" id="banner-extend" type="button">Продлить срок</button>
+    </div>
+  </div>
+
+  <!-- ЖУРНАЛ -->
+  <section class="panel on" id="panel-journal">
+    <div class="ptitle">
+      <div><h1>Журнал исходящих</h1><p id="retention-note"></p></div>
+      <button class="btn" id="btn-new" type="button">＋ Получить номер</button>
+    </div>
+    <div class="card">
+      <div class="filters">
+        <input id="q" type="search" placeholder="Поиск: номер, адресат, тема…" aria-label="Поиск" />
+        <select id="flt-company" aria-label="Компания"></select>
+        <select id="flt-year" aria-label="Год"></select>
+        <select id="flt-status" aria-label="Статус">
+          <option value="">Все</option><option value="active">Действующие</option><option value="void">Аннулированные</option>
+        </select>
+      </div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>№</th><th>Дата</th><th>Компания</th><th>Кому / тема</th><th>Файлы</th><th></th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table></div>
+      <div class="empty" id="empty" hidden>Писем пока нет</div>
+      <div class="pager"><span id="pager-info"></span><span><button class="btn ghost sm" id="pg-prev" type="button">‹</button> <button class="btn ghost sm" id="pg-next" type="button">›</button></span></div>
+    </div>
+  </section>
+
+  <!-- КОМПАНИИ -->
+  <section class="panel" id="panel-comp">
+    <div id="comp-list">
+      <div class="ptitle"><div><h1>Компании</h1><p>Список из раздела «Визы и договоры». Нажмите на карточку, чтобы увидеть все письма компании.</p></div>
+        <button class="btn ghost" id="btn-add-co" type="button">＋ Компания не из виз</button></div>
+      <div class="toolbar"><input id="co-search" type="search" placeholder="Найти компанию…" aria-label="Найти компанию" /><div class="viewsw" role="group" aria-label="Вид"><button type="button" data-view="cards" title="Карточками">▦ Карточки</button><button type="button" data-view="list" title="Списком">☰ Список</button></div></div>
+      <div class="cgrid" id="cgrid"></div>
+    </div>
+
+    <div id="comp-detail" hidden>
+      <div class="crumbs"><button class="btn ghost sm" id="cd-back" type="button">← Все компании</button></div>
+      <div class="ptitle">
+        <div><h1 id="cd-name"></h1><p id="cd-sub"></p></div>
+        <div class="cd-actions">
+          <button class="btn" id="cd-new" type="button">＋ Получить номер</button>
+          <a class="btn ghost" id="cd-zip" href="#">⬇ Архив компании</a>
+          <button class="btn ghost" id="cd-settings" type="button">⚙ Настройки</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>№</th><th>Дата</th><th>Компания</th><th>Кому / тема</th><th>Файлы</th><th></th></tr></thead>
+          <tbody id="cd-rows"></tbody>
+        </table></div>
+        <div class="empty" id="cd-empty" hidden>У этой компании пока нет писем</div>
+        <div class="pager"><span id="cd-pager-info"></span><span><button class="btn ghost sm" id="cd-prev" type="button">‹</button> <button class="btn ghost sm" id="cd-next" type="button">›</button></span></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Новое письмо -->
+<dialog id="dlg-new">
+  <div id="new-form">
+    <h3>Получить исходящий номер</h3>
+    <label for="f-company">Компания</label>
+    <select id="f-company"></select>
+    <div class="next"><small>Следующий номер</small><b id="next-num">—</b><div class="sub" id="next-last"></div></div>
+    <label for="f-date">Дата письма</label>
+    <input type="date" id="f-date" />
+    <label for="f-recipient">Кому (адресат)</label>
+    <input id="f-recipient" maxlength="300" placeholder="Например: Министерство юстиции КР" />
+    <label for="f-subject">Тема / краткое содержание</label>
+    <textarea id="f-subject" maxlength="1000"></textarea>
+    <label class="check"><input type="checkbox" id="f-manual" /> Указать номер вручную</label>
+    <div id="f-manual-box" hidden>
+      <input type="number" id="f-seq" min="1" step="1" inputmode="numeric" placeholder="Например: 15" aria-label="Номер вручную" />
+      <div class="hint">Для письма, которое уже отправлено под известным номером. Следующие номера пойдут после самого большого.</div>
+    </div>
+    <label for="f-files">Файлы письма (необязательно)</label>
+    <input type="file" id="f-files" multiple />
+    <div class="hint" id="f-files-hint"></div>
+    <div class="err" id="take-err" role="alert"></div>
+    <div class="dlg-actions"><button class="btn ghost" id="new-cancel" type="button">Отмена</button><button class="btn" id="btn-take" type="button">Получить номер</button></div>
+  </div>
+  <div id="new-done" hidden>
+    <h3>Номер выдан</h3>
+    <div class="got"><div class="sub" id="got-company"></div><div class="big" id="got-num"></div><div class="sub" id="got-warn"></div>
+      <button class="btn ghost sm" id="btn-copy" type="button" style="margin-top:.5rem">Копировать «Исх. № … от …»</button></div>
+    <div class="dlg-actions"><button class="btn ghost" id="done-close" type="button">Закрыть</button><button class="btn" id="done-again" type="button">Получить ещё номер</button></div>
+  </div>
+</dialog>
+
+<!-- Правка письма + файлы -->
+<dialog id="dlg-edit">
+  <h3 id="ed-title">Письмо</h3>
+  <label for="e-recipient">Кому</label><input id="e-recipient" maxlength="300" />
+  <label for="e-subject">Тема</label><textarea id="e-subject" maxlength="1000"></textarea>
+  <div class="hint">Номер и дату изменить нельзя — так нумерация остаётся честной.</div>
+  <label>Файлы</label>
+  <div class="flist" id="ed-files"></div>
+  <input type="file" id="e-addfile" multiple style="margin-top:.5rem" />
+  <div class="hint" id="e-files-hint"></div>
+  <div class="err" id="ed-err" role="alert"></div>
+  <div class="dlg-actions">
+    <button class="btn ghost" id="ed-void" type="button" style="margin-right:auto"></button>
+    <button class="btn ghost" id="ed-cancel" type="button">Закрыть</button><button class="btn" id="ed-save" type="button">Сохранить</button>
+  </div>
+</dialog>
+
+<!-- Компания: создание / настройки -->
+<dialog id="dlg-co">
+  <h3 id="co-title">Компания</h3>
+  <label for="c-name" id="c-name-label">Название</label>
+  <input id="c-name" maxlength="200" />
+  <div class="row">
+    <div><label for="c-prefix">Префикс номера</label><input id="c-prefix" maxlength="20" placeholder="напр. ИСХ-" /></div>
+    <div><label for="c-start">Начать с номера</label><input id="c-start" type="number" min="1" value="1" /></div>
+  </div>
+  <div class="hint">Если компания уже вела нумерацию — укажите, с какого номера продолжить (последний использованный + 1). Действует, пока не выдан первый номер.</div>
+  <label class="check"><input type="checkbox" id="c-yearly" checked /> Начинать нумерацию заново каждый год</label>
+  <div class="err" id="co-err" role="alert"></div>
+  <div class="dlg-actions"><button class="btn ghost" id="co-cancel" type="button">Отмена</button><button class="btn" id="co-save" type="button">Сохранить</button></div>
+</dialog>
+
+<dialog id="dlg-settings">
+  <h3>⚙️ Настройки оформления</h3>
+  <label>Цветовая тема приложения</label>
+  <div class="theme-grid" id="theme-grid"></div>
+  <div class="dlg-actions"><button class="btn" id="settings-close" type="button">Готово</button></div>
+</dialog>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var companies = [], STATS = { warn_days: 14, retention_days: 60, max_file_mb: 25 };
+  var currentCompany = null, editing = null, editingCo = null, lastGot = null;
+
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function ruDate(iso){ var p = String(iso).split('-'); return p.length === 3 ? p[2] + '.' + p[1] + '.' + p[0] : iso; }
+  function todayISO(){ var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+  function daysLeft(iso){ return Math.ceil((new Date(iso) - Date.now()) / 86400000); }
+  function plural(n, a, b, c){ var m = n % 100, k = n % 10; return (m > 10 && m < 20) ? c : k === 1 ? a : (k >= 2 && k <= 4) ? b : c; }
+  function size(b){ return b < 1024 ? b + ' Б' : b < 1048576 ? Math.round(b/1024) + ' КБ' : (b/1048576).toFixed(1) + ' МБ'; }
+  function lsGet(k){ try { return localStorage.getItem(k) || ''; } catch(e){ return ''; } }
+  function lsSet(k,v){ try { localStorage.setItem(k, v); } catch(e){} }
+  var toastT;
+  function toast(t){ var el = $('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(function(){ el.classList.remove('on'); }, 2600); }
+  function api(method, url, body){
+    return fetch(url, { method: method, headers: {'Content-Type':'application/json'}, body: body ? JSON.stringify(body) : undefined })
+      .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ if (!r.ok) throw new Error(j.error || ('Ошибка ' + r.status)); return j; }); });
+  }
+  function uploadFile(letterId, file){
+    if (file.size > STATS.max_file_mb * 1048576) return Promise.reject(new Error('«' + file.name + '» больше ' + STATS.max_file_mb + ' МБ'));
+    return fetch('/api/outgoing/letters/' + letterId + '/files?name=' + encodeURIComponent(file.name), {
+      method: 'POST', headers: {'Content-Type':'application/octet-stream'}, body: file
+    }).then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ if (!r.ok) throw new Error(j.error || ('Ошибка ' + r.status)); return j; }); });
+  }
+
+  // ----- вкладки -----
+  function showTab(name){
+    $('tab-journal').classList.toggle('on', name === 'journal');
+    $('tab-comp').classList.toggle('on', name === 'comp');
+    $('panel-journal').classList.toggle('on', name === 'journal');
+    $('panel-comp').classList.toggle('on', name === 'comp');
+    if (name === 'journal') journal.load(); else if (currentCompany) detail.load();
+    try { history.replaceState(null, '', '#' + name); } catch(e){}
+  }
+  $('tab-journal').onclick = function(){ showTab('journal'); };
+  $('tab-comp').onclick = function(){ closeCompany(); showTab('comp'); };
+
+  // ----- таблица писем (используется в журнале и в карточке компании) -----
+  function LetterList(o){
+    var PAGE = 50, offset = 0, items = [];
+    var self = {
+      load: function(reset){
+        if (reset) offset = 0;
+        var p = o.params(); p.set('limit', PAGE); p.set('offset', offset);
+        return api('GET', '/api/outgoing/letters?' + p.toString()).then(function(r){
+          items = r.items;
+          o.tbody.innerHTML = items.map(function(l, i){
+            var chip = '';
+            if (l.files_count) {
+              var d = daysLeft(l.files_expire_at), soon = d <= STATS.warn_days;
+              chip = '<span class="files-chip' + (soon ? ' soon' : '') + '" data-edit="' + i + '" title="Файлы удалятся через ' + d + ' дн.">📎 ' + l.files_count + (soon ? ' · ' + Math.max(d,0) + ' дн.' : '') + '</span>';
+            }
+            return '<tr class="' + (l.status === 'void' ? 'void' : '') + '"><td class="num">' + esc(l.number) + '</td><td>' + ruDate(l.letter_date) + '</td><td>' + esc(l.company_name) + '</td>' +
+              '<td class="main">' + esc(l.recipient) + '<div class="sub">' + esc(l.subject) + '</div></td><td>' + chip + '</td>' +
+              '<td class="act"><button class="btn ghost sm" data-edit="' + i + '">Изменить</button> <button class="btn danger sm" data-del="' + i + '" title="Удалить письмо" aria-label="Удалить письмо">🗑 Удалить</button></td></tr>';
+          }).join('');
+          o.empty.hidden = items.length > 0;
+          o.info.textContent = r.total ? ((offset + 1) + '–' + (offset + items.length) + ' из ' + r.total) : '';
+          o.prev.disabled = offset === 0; o.next.disabled = offset + PAGE >= r.total;
+        }).catch(function(er){ o.tbody.innerHTML = ''; o.empty.hidden = false; o.empty.textContent = er.message; });
+      },
+      get: function(i){ return items[i]; }
+    };
+    o.prev.onclick = function(){ offset = Math.max(0, offset - PAGE); self.load(); };
+    o.next.onclick = function(){ offset += PAGE; self.load(); };
+    o.tbody.addEventListener('click', function(e){
+      var t = e.target.closest('[data-edit],[data-del]'); if (!t) return;
+      if (t.hasAttribute('data-edit')) openEdit(items[Number(t.getAttribute('data-edit'))]);
+      else deleteLetter(items[Number(t.getAttribute('data-del'))]);
+    });
+    return self;
+  }
+
+  var journal = LetterList({
+    tbody: $('rows'), empty: $('empty'), info: $('pager-info'), prev: $('pg-prev'), next: $('pg-next'),
+    params: function(){
+      var p = new URLSearchParams();
+      if ($('q').value.trim()) p.set('q', $('q').value.trim());
+      if ($('flt-company').value) p.set('company_id', $('flt-company').value);
+      if ($('flt-year').value) p.set('year', $('flt-year').value);
+      if ($('flt-status').value) p.set('status', $('flt-status').value);
+      return p;
+    }
+  });
+  var detail = LetterList({
+    tbody: $('cd-rows'), empty: $('cd-empty'), info: $('cd-pager-info'), prev: $('cd-prev'), next: $('cd-next'),
+    params: function(){ var p = new URLSearchParams(); p.set('company_id', currentCompany ? currentCompany.id : 0); return p; }
+  });
+  function reloadAll(){ return Promise.all([loadCompanies(), loadStats(), journal.load(), currentCompany ? detail.load() : null]); }
+
+  var y = new Date().getFullYear();
+  $('flt-year').innerHTML = '<option value="">Все годы</option>' + [y+1,y,y-1,y-2,y-3].map(function(v){ return '<option value="'+v+'">'+v+'</option>'; }).join('');
+  var timer; $('q').addEventListener('input', function(){ clearTimeout(timer); timer = setTimeout(function(){ journal.load(true); }, 250); });
+  ['flt-company','flt-year','flt-status'].forEach(function(id){ $(id).addEventListener('change', function(){ journal.load(true); }); });
+
+  // ----- напоминание о сроке хранения файлов -----
+  function loadStats(){
+    return api('GET', '/api/outgoing/stats').then(function(s){
+      STATS = s;
+      $('retention-note').textContent = 'Файлы хранятся ' + s.retention_days + ' дн. после загрузки, затем удаляются автоматически (письма в журнале остаются). Скачайте архив заранее.';
+      $('f-files-hint').textContent = $('e-files-hint').textContent = 'До ' + s.max_file_mb + ' МБ на файл. Хранятся ' + s.retention_days + ' дн.';
+      var b = $('banner');
+      if (s.expiring > 0) {
+        $('banner-msg').innerHTML = '⏰ <b>Скоро удалятся файлы: ' + s.expiring + '</b>' + (s.nearest_days != null ? ' (ближайшие — через ' + s.nearest_days + ' ' + plural(s.nearest_days,'день','дня','дней') + ')' : '') +
+          '. Скачайте их архивом или продлите срок хранения на ' + s.retention_days + ' дн.';
+        b.classList.add('on');
+      } else b.classList.remove('on');
+    }).catch(function(){});
+  }
+  $('banner-extend').onclick = function(){
+    api('POST', '/api/outgoing/files/extend-expiring').then(function(r){ toast('Срок продлён для файлов: ' + r.extended); return reloadAll(); }).catch(function(er){ toast(er.message); });
+  };
+
+  // ----- компании -----
+  function loadCompanies(){
+    return api('GET', '/api/outgoing/companies').then(function(list){
+      companies = list;
+      $('comp-count').textContent = list.length;
+      var active = list.filter(function(c){ return !c.archived; });
+      var cur = $('f-company').value || lsGet('out_company');
+      $('f-company').innerHTML = active.length ? active.map(function(c){ return '<option value="'+c.id+'">'+esc(c.name)+'</option>'; }).join('') : '<option value="">— нет компаний —</option>';
+      if (active.some(function(c){ return String(c.id) === cur; })) $('f-company').value = cur;
+      var fc = $('flt-company').value;
+      $('flt-company').innerHTML = '<option value="">Все компании</option>' + list.map(function(c){ return '<option value="'+c.id+'">'+esc(c.name)+'</option>'; }).join('');
+      $('flt-company').value = fc;
+      renderCards(); showNext();
+      if (currentCompany) { currentCompany = list.find(function(c){ return c.id === currentCompany.id; }) || null; if (currentCompany) fillDetailHead(); }
+    });
+  }
+  var view = (function(){ try { return localStorage.getItem('bsp_view') || localStorage.getItem('cl_view') || 'cards'; } catch(e){ return 'cards'; } })();
+  function setView(v){
+    view = v; try { localStorage.setItem('bsp_view', v); } catch(e){}
+    Array.prototype.forEach.call(document.querySelectorAll('.viewsw button'), function(b){ b.classList.toggle('on', b.getAttribute('data-view') === v); });
+    renderCards();
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('.viewsw button'), function(b){ b.onclick = function(){ setView(b.getAttribute('data-view')); }; });
+  function renderCards(){
+    var q = $('co-search').value.trim().toLowerCase();
+    var list = companies.filter(function(c){ return !q || c.name.toLowerCase().indexOf(q) >= 0; });
+    var grid = $('cgrid');
+    if (view === 'list' && list.length) {
+      grid.className = 'list';
+      grid.innerHTML = '<table><thead><tr><th>Компания</th><th>Писем</th><th>Последний №</th><th>Следующий №</th><th>Файлы</th><th></th></tr></thead><tbody>' +
+        list.map(function(c){
+          return '<tr tabindex="0" role="button" data-co="' + c.id + '"><td><b>' + esc(c.name) + '</b></td><td>' + c.letters_total + '</td><td>' + (c.last_number ? esc(c.last_number) : '—') + '</td>' +
+            '<td><b style="color:var(--acc)">' + esc(c.next_number) + '</b></td><td>' + (c.files_total ? '📎 ' + c.files_total : '') + '</td>' +
+            '<td class="act"><button class="gear" data-gear="' + c.id + '" title="Настройки нумерации" aria-label="Настройки нумерации">⚙</button></td></tr>';
+        }).join('') + '</tbody></table>';
+      return;
+    }
+    grid.className = 'cgrid';
+    grid.innerHTML = list.length ? list.map(function(c){
+      return '<div class="cc" tabindex="0" role="button" data-co="' + c.id + '"><div class="top"><div class="nm">' + esc(c.name) + '</div>' +
+        '<button class="gear" data-gear="' + c.id + '" title="Настройки нумерации" aria-label="Настройки нумерации">⚙</button></div>' +
+        '<div class="meta"><span class="chip">писем: <b>' + c.letters_total + '</b></span>' +
+        '<span class="chip">последний: <b>' + (c.last_number ? esc(c.last_number) : '—') + '</b></span>' +
+        '<span class="chip">следующий: <b>' + esc(c.next_number) + '</b></span>' +
+        (c.files_total ? '<span class="chip">📎 ' + c.files_total + '</span>' : '') + '</div></div>';
+    }).join('') : '<div class="empty">Компании не найдены</div>';
+  }
+  $('co-search').addEventListener('input', renderCards);
+  function openCard(e){
+    var g = e.target.closest('[data-gear]');
+    if (g) { e.stopPropagation(); openCompanyDialog(companies.find(function(c){ return String(c.id) === g.getAttribute('data-gear'); })); return; }
+    var c = e.target.closest('[data-co]'); if (!c) return;
+    openCompany(companies.find(function(x){ return String(x.id) === c.getAttribute('data-co'); }));
+  }
+  $('cgrid').addEventListener('click', openCard);
+  $('cgrid').addEventListener('keydown', function(e){ if ((e.key === 'Enter' || e.key === ' ') && e.target.hasAttribute('data-co')) { e.preventDefault(); openCard(e); } });
+
+  function fillDetailHead(){
+    $('cd-name').textContent = currentCompany.name;
+    $('cd-sub').textContent = 'Писем: ' + currentCompany.letters_total + ' · последний номер: ' + (currentCompany.last_number || '—') + ' · следующий: ' + currentCompany.next_number;
+    $('cd-zip').href = '/api/outgoing/archive.zip?company_id=' + currentCompany.id;
+  }
+  function openCompany(c){
+    currentCompany = c; fillDetailHead();
+    $('comp-list').hidden = true; $('comp-detail').hidden = false;
+    detail.load(true);
+    window.scrollTo(0, 0);
+  }
+  function closeCompany(){ currentCompany = null; $('comp-list').hidden = false; $('comp-detail').hidden = true; }
+  $('cd-back').onclick = closeCompany;
+  $('cd-new').onclick = function(){ openNew(currentCompany && currentCompany.id); };
+  $('cd-settings').onclick = function(){ openCompanyDialog(currentCompany); };
+
+  // настройки / создание компании
+  function openCompanyDialog(c){
+    editingCo = c || null; $('co-err').textContent = '';
+    $('co-title').textContent = c ? 'Настройки: ' + c.name : 'Новая компания';
+    var nameLocked = !!(c && c.from_visa);
+    $('c-name').value = c ? c.name : ''; $('c-name').disabled = nameLocked;
+    $('c-name-label').textContent = nameLocked ? 'Название (меняется в разделе «Визы и договоры»)' : 'Название';
+    $('c-prefix').value = c ? c.prefix : ''; $('c-start').value = c ? c.start_number : 1; $('c-yearly').checked = c ? c.reset_yearly : true;
+    $('c-yearly').disabled = !!(c && c.letters_total > 0);
+    $('dlg-co').showModal();
+  }
+  $('btn-add-co').onclick = function(){ openCompanyDialog(null); };
+  $('co-cancel').onclick = function(){ $('dlg-co').close(); };
+  $('co-save').onclick = function(){
+    var body = { prefix: $('c-prefix').value, start_number: $('c-start').value };
+    var req;
+    if (editingCo) {
+      if (!$('c-name').disabled) body.name = $('c-name').value;
+      if (!$('c-yearly').disabled) body.reset_yearly = $('c-yearly').checked;
+      req = api('PATCH', '/api/outgoing/companies/' + editingCo.id, body);
+    } else { body.name = $('c-name').value; body.reset_yearly = $('c-yearly').checked; req = api('POST', '/api/outgoing/companies', body); }
+    req.then(function(){ $('dlg-co').close(); return reloadAll(); }).catch(function(er){ $('co-err').textContent = er.message; });
+  };
+
+  // ----- выдача номера -----
+  function showNext(){
+    var c = companies.find(function(x){ return String(x.id) === $('f-company').value; });
+    $('next-num').textContent = c ? c.next_number : '—';
+    $('next-last').textContent = c ? (c.last_number ? 'последний выданный: ' + c.last_number : 'номеров ещё не было') : '';
+    $('btn-take').disabled = !c;
+    $('btn-take').textContent = $('f-manual').checked ? 'Записать номер' : 'Получить номер';
+  }
+  $('f-company').addEventListener('change', function(){ lsSet('out_company', this.value); showNext(); });
+  function openNew(companyId){
+    if (companyId) $('f-company').value = String(companyId);
+    $('new-form').hidden = false; $('new-done').hidden = true; $('take-err').textContent = '';
+    $('f-manual').checked = false; $('f-manual-box').hidden = true; $('f-seq').value = '';
+    $('f-date').value = todayISO(); $('f-files').value = '';
+    showNext(); $('dlg-new').showModal(); $('f-recipient').focus();
+  }
+  $('f-manual').addEventListener('change', function(){ $('f-manual-box').hidden = !this.checked; if (this.checked) $('f-seq').focus(); showNext(); });
+  $('btn-new').onclick = function(){ openNew(null); };
+  $('new-cancel').onclick = $('done-close').onclick = function(){ $('dlg-new').close(); };
+  $('done-again').onclick = function(){ ['f-recipient','f-subject'].forEach(function(id){ $(id).value=''; }); openNew(null); };
+  $('btn-take').onclick = function(){
+    var btn = this; $('take-err').textContent = ''; btn.disabled = true;
+    var files = Array.prototype.slice.call($('f-files').files);
+    var big = files.filter(function(f){ return f.size > STATS.max_file_mb * 1048576; })[0];
+    if (big) { $('take-err').textContent = '«' + big.name + '» больше ' + STATS.max_file_mb + ' МБ'; btn.disabled = false; return; }
+    api('POST', '/api/outgoing/letters', {
+      company_id: $('f-company').value, letter_date: $('f-date').value, recipient: $('f-recipient').value, subject: $('f-subject').value,
+      seq: $('f-manual').checked ? $('f-seq').value : ''
+    }).then(function(l){
+      lastGot = l;
+      var failed = [];
+      var chain = files.reduce(function(p, f, i){
+        return p.then(function(){ btn.textContent = 'Загрузка файла ' + (i+1) + ' из ' + files.length + '…'; return uploadFile(l.id, f); }).catch(function(er){ failed.push(er.message); });
+      }, Promise.resolve());
+      return chain.then(function(){
+        $('got-company').textContent = l.company_name;
+        $('new-done').querySelector('h3').textContent = $('f-manual').checked ? 'Номер записан' : 'Номер выдан';
+        $('got-num').textContent = 'Исх. № ' + l.number + ' от ' + ruDate(l.letter_date);
+        $('got-warn').textContent = failed.length ? 'Номер выдан, но не все файлы загрузились: ' + failed.join('; ') + '. Добавьте их через «Изменить».' : (files.length ? 'Файлов загружено: ' + files.length : '');
+        $('new-form').hidden = true; $('new-done').hidden = false;
+        return reloadAll();
+      });
+    }).catch(function(er){ $('take-err').textContent = er.message; }).then(function(){ showNext(); });
+  };
+  $('btn-copy').onclick = function(){
+    if (!lastGot) return;
+    var t = 'Исх. № ' + lastGot.number + ' от ' + ruDate(lastGot.letter_date), b = this;
+    function done(){ b.textContent = 'Скопировано ✓'; setTimeout(function(){ b.textContent = 'Копировать «Исх. № … от …»'; }, 1500); }
+    if (navigator.clipboard) navigator.clipboard.writeText(t).then(done, function(){ window.prompt('Скопируйте:', t); });
+    else window.prompt('Скопируйте:', t);
+  };
+
+  // ----- правка письма, файлы, удаление -----
+  function renderFiles(){
+    return api('GET', '/api/outgoing/letters/' + editing.id + '/files').then(function(list){
+      $('ed-files').innerHTML = list.length ? list.map(function(f){
+        var soon = f.days_left <= STATS.warn_days;
+        return '<div class="frow"><span class="fn" title="' + esc(f.name) + '">📎 ' + esc(f.name) + '</span><span class="sub">' + size(f.size) + '</span>' +
+          '<span class="left' + (soon ? ' soon' : '') + '">' + (f.days_left > 0 ? 'ещё ' + f.days_left + ' дн.' : 'удалится сегодня') + '</span>' +
+          '<a class="btn ghost sm" href="/api/outgoing/files/' + f.id + '" title="Скачать">⬇</a>' +
+          '<button class="btn ghost sm" data-ext="' + f.id + '" title="Продлить срок хранения">⏳</button>' +
+          '<button class="btn danger sm" data-fdel="' + f.id + '" title="Удалить файл">🗑</button></div>';
+      }).join('') : '<div class="frow"><span class="sub">Файлов нет</span></div>';
+    });
+  }
+  function openEdit(l){
+    editing = l; $('ed-err').textContent = '';
+    $('ed-title').textContent = 'Исх. № ' + l.number + ' · ' + l.company_name;
+    $('e-recipient').value = l.recipient; $('e-subject').value = l.subject; $('e-addfile').value = '';
+    $('ed-void').textContent = l.status === 'void' ? 'Восстановить номер' : 'Аннулировать';
+    renderFiles(); $('dlg-edit').showModal();
+  }
+  $('ed-files').addEventListener('click', function(e){
+    var ext = e.target.getAttribute('data-ext'), del = e.target.getAttribute('data-fdel');
+    if (ext) api('POST', '/api/outgoing/files/' + ext + '/extend').then(function(){ toast('Срок продлён'); return Promise.all([renderFiles(), loadStats(), journal.load()]); }).catch(function(er){ $('ed-err').textContent = er.message; });
+    if (del && confirm('Удалить этот файл?')) api('DELETE', '/api/outgoing/files/' + del).then(function(){ return Promise.all([renderFiles(), reloadAll()]); }).catch(function(er){ $('ed-err').textContent = er.message; });
+  });
+  $('e-addfile').addEventListener('change', function(){
+    var files = Array.prototype.slice.call(this.files); if (!files.length) return; var inp = this; $('ed-err').textContent = '';
+    files.reduce(function(p, f){ return p.then(function(){ return uploadFile(editing.id, f); }); }, Promise.resolve())
+      .catch(function(er){ $('ed-err').textContent = er.message; })
+      .then(function(){ inp.value = ''; return Promise.all([renderFiles(), reloadAll()]); });
+  });
+  function patchLetter(body){
+    return api('PATCH', '/api/outgoing/letters/' + editing.id, body).then(function(){ $('dlg-edit').close(); return reloadAll(); }).catch(function(er){ $('ed-err').textContent = er.message; });
+  }
+  $('ed-cancel').onclick = function(){ $('dlg-edit').close(); reloadAll(); };
+  $('ed-save').onclick = function(){ patchLetter({ recipient: $('e-recipient').value, subject: $('e-subject').value }); };
+  $('ed-void').onclick = function(){
+    var to = editing.status === 'void' ? 'active' : 'void';
+    if (to === 'void' && !confirm('Аннулировать номер ' + editing.number + '? Он останется в журнале и больше выдан не будет.')) return;
+    patchLetter({ status: to });
+  };
+  function deleteLetter(l){
+    var msg = 'Удалить письмо № ' + l.number + ' (' + l.company_name + ')' + (l.files_count ? ' вместе с файлами (' + l.files_count + ')' : '') + '?\nЭто нельзя отменить.\nЕсли это последний номер компании, он снова станет свободным.';
+    if (!confirm(msg)) return;
+    api('DELETE', '/api/outgoing/letters/' + l.id).then(function(r){ toast(r.number_released ? 'Удалено. Номер снова свободен' : 'Письмо удалено'); return reloadAll(); }).catch(function(er){ toast(er.message); });
+  }
+
+  // настройки оформления
+  $('btn-settings').onclick = function(){ AppTheme.renderGrid(); $('dlg-settings').showModal(); };
+  $('settings-close').onclick = function(){ $('dlg-settings').close(); };
+  $('theme-grid').addEventListener('click', function(e){ var b = e.target.closest('[data-theme]'); if (b) AppTheme.apply(b.getAttribute('data-theme')); });
+
+  // старт
+  Array.prototype.forEach.call(document.querySelectorAll('.viewsw button'), function(b){ b.classList.toggle('on', b.getAttribute('data-view') === view); });
+  var initial = (location.hash || '').replace('#','');
+  loadStats();
+  loadCompanies().then(function(){ showTab(initial === 'comp' ? 'comp' : 'journal'); }).catch(function(er){ $('empty').hidden = false; $('empty').textContent = er.message; });
+})();
+</script>
+</body>
+</html>

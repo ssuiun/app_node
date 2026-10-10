@@ -25,6 +25,16 @@
     .tb:hover{color:var(--txt);background:var(--card)}
     .tb.on{color:#fff;background:linear-gradient(135deg,var(--acc),var(--acc2));box-shadow:var(--glow)}
     .badge{display:inline-block;background:rgba(255,255,255,.15);border-radius:20px;padding:0 5px;font-size:.72rem;margin-left:4px}
+    /* ОТЧЁТ */
+    .rep-filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.9rem;margin-bottom:1.1rem}
+    .rep-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.1rem;margin-bottom:1.1rem}
+    .rep-big{font-family:var(--heading-font);font-size:2.6rem;font-weight:800;line-height:1.1;color:var(--acc2);font-variant-numeric:tabular-nums}
+    .rep-sub{color:var(--txt2);font-size:.86rem;margin-top:.35rem}
+    .rep-table td.n,.rep-table th.n{text-align:right;font-variant-numeric:tabular-nums}
+    .rep-table td.n{font-weight:700}
+    .rep-table tr.tot td{border-top:2px solid var(--border2);font-weight:800;color:var(--acc2)}
+    .rep-table td:last-child,.rep-table th:last-child{position:static;box-shadow:none;background:transparent}
+    @media(max-width:760px){.rep-filters{grid-template-columns:1fr 1fr}.rep-cards{grid-template-columns:1fr}}
     /* LAYOUT */
     .wrap{max-width:1320px;margin:0 auto;padding:1.75rem}
     .panel{display:none;animation:fi .28s cubic-bezier(.23,1,.32,1)}
@@ -100,6 +110,10 @@
     .sb input{width:100%;padding:.6rem .85rem .6rem 2.3rem;background:var(--card);border:1px solid var(--border);border-radius:var(--rs);color:var(--txt);font-family:inherit;font-size:.87rem;outline:none;transition:border-color var(--tr)}
     .sb input:focus{border-color:var(--acc)}
     .si{position:absolute;left:.72rem;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.82rem;pointer-events:none}
+    .viewsw{display:inline-flex;border:1px solid var(--border2);border-radius:var(--rs);overflow:hidden;flex-shrink:0}
+    .viewsw button{border:none;background:var(--card);color:var(--txt2);padding:.4rem .75rem;font:inherit;font-size:.78rem;font-weight:600;cursor:pointer}
+    .viewsw button+button{border-left:1px solid var(--border2)}
+    .viewsw button.on{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff}
     .cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:.9rem}
     .cc{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1.15rem;transition:border-color var(--tr),transform var(--tr),box-shadow var(--tr);position:relative;overflow:hidden}
     .cc::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(to bottom,var(--acc),var(--acc2));opacity:0;transition:opacity var(--tr)}
@@ -195,14 +209,16 @@
   </style>
 </head>
 <body>
-<script>window.RAILWAY_STORAGE_CONFIG={"keys": ["vd_db3", "vd_visas", "vd_hook", "vd_secret"], "prefixes": ["vd_tpl_", "vd_tplname_"]};</script>
+<script>window.RAILWAY_STORAGE_CONFIG={"keys": ["vd_db3", "vd_hook", "vd_secret"], "prefixes": ["vd_tpl_", "vd_tplname_"]};</script>
 <script src="/railway-sync.js"></script>
+<script src="/vd-default-companies.js"></script>
 
 <header id="app-header">
   <div class="hdr">
     <div class="logo"><div class="logo-i" id="logo-icon" aria-hidden="true"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" fill="none" stroke-width="7" stroke-linecap="round" style="width:62%;height:62%"><circle cx="50" cy="50" r="44"/><circle cx="50" cy="50" r="18"/><line x1="50" y1="6" x2="50" y2="94"/><line x1="6" y1="50" x2="94" y2="50"/><line x1="18.5" y1="18.5" x2="81.5" y2="81.5"/><line x1="81.5" y1="18.5" x2="18.5" y2="81.5"/></svg></div>Визовые документы</div>
     <nav class="tabs">
-      <button class="tb on" id="tab-oby" onclick="sw('oby')">📄 Обязательство и Ходатайство</button>
+      <button class="tb on" id="tab-rep" onclick="sw('rep')">📊 Отчёт</button>
+      <button class="tb" id="tab-oby" onclick="sw('oby')">📄 Обязательство и Ходатайство</button>
       <button class="tb" id="tab-zay" onclick="sw('zay')">📝 Заявление</button>
       <button class="tb" id="tab-trud" onclick="sw('trud')">📃 Трудовой договор</button>
       <button class="tb" id="tab-scan" onclick="sw('scan')">📷 Скан паспорта</button>
@@ -216,7 +232,39 @@
 <main class="wrap">
 
 <!-- ══ TAB 1: ОБЯЗАТЕЛЬСТВО ══ -->
-<div class="panel on" id="panel-oby">
+<!-- ══ TAB 0: ОТЧЁТ ══ -->
+<div class="panel on" id="panel-rep">
+  <div class="ptitle">
+    <h1>Отчёт</h1>
+    <p>Сводка по оформленным визам: считаются записи из вкладки «Визы» по дате подачи</p>
+  </div>
+  <div class="rep-filters">
+    <div class="fg"><label for="rep-period">Период</label><div class="sw"><select id="rep-period" onchange="renderReport()">
+      <option value="today">Сегодня</option><option value="week">Эта неделя</option><option value="month" selected>Этот месяц</option>
+      <option value="prevmonth">Прошлый месяц</option><option value="year">Этот год</option><option value="all">Всё время</option></select></div></div>
+    <div class="fg"><label for="rep-status">Статус</label><div class="sw"><select id="rep-status" onchange="renderReport()"></select></div></div>
+    <div class="fg"><label for="rep-type">Тип визы</label><div class="sw"><select id="rep-type" onchange="renderReport()"></select></div></div>
+    <div class="fg"><label for="rep-exec">Сотрудник</label><div class="sw"><select id="rep-exec" onchange="renderReport()"></select></div></div>
+  </div>
+  <div class="rep-cards">
+    <div class="card">
+      <div class="ct">Сегодня</div>
+      <div class="rep-big" id="rep-date"></div>
+      <div class="rep-sub" id="rep-date-sub"></div>
+    </div>
+    <div class="card">
+      <div class="ct" id="rep-total-title">Оформлено виз</div>
+      <div class="rep-big" id="rep-total">0</div>
+      <div class="rep-sub" id="rep-total-sub"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ct">Кто сколько оформил</div>
+    <div class="vtable-wrap"><table class="vtable rep-table" id="rep-table"><thead></thead><tbody></tbody></table></div>
+  </div>
+</div>
+
+<div class="panel" id="panel-oby">
   <div class="ptitle">
     <h1>Обязательство и Ходатайство</h1>
     <p>Загрузите шаблон Word-файла, заполните данные и скачайте готовый документ</p>
@@ -443,6 +491,7 @@
     <div class="ptitle" style="margin:0"><h1 style="font-size:1.4rem">База компаний</h1></div>
     <div style="display:flex;gap:.65rem;align-items:center;flex-wrap:wrap">
       <div class="sb"><span class="si">🔍</span><label for="search" class="sr-only">Поиск компании</label><input type="text" id="search" placeholder="Поиск по названию, ИНН..." oninput="renderComp()" /></div>
+      <div class="viewsw" role="group" aria-label="Вид"><button type="button" data-view="cards" title="Карточками">▦ Карточки</button><button type="button" data-view="list" title="Списком">☰ Список</button></div>
       <button class="btn bg bsm" onclick="exportDB()" title="Скачать базу компаний в JSON">⬇️ Экспорт</button>
       <button class="btn bg bsm" onclick="document.getElementById('import-file').click()" title="Загрузить компании из JSON">⬆️ Импорт</button>
       <input type="file" id="import-file" accept="application/json" style="display:none" onchange="importDB(this)" />
@@ -574,32 +623,7 @@ function abToB64(buf) {
   return btoa(binary);
 }
 /* ═══════ DB ═══════ */
-const DFLT = [
-  {id:"1",name:"Кыргызско-Китайский Бизнес Консалтинг Глобал",full_name:"Общество с ограниченной ответственностью «Кыргызско-Китайский Бизнес Консалтинг Глобал»",address:"Юр. адрес: КР, г.Бишкек, Октябрьский р-н, ул. Кулмурзаева, 81",info:"перерегистрированным от 08 декабря 2025 года Министерством Юстиции Кыргызской Республики, регистрационный № 322123-3301-000.",activity:"70.22.0 Консультирование по вопросам коммерческой деятельности и управления",inn:"00611202510102",okpo:"34359346",reg_type:"перерегистрирована",reg_date:"08.12.2025",reg_num:"322123-3301-000",director:"Нурлукова Алида Нурлуковна"},
-  {id:"2",name:"Чунцинская зарубежная строительная корпорация",full_name:"Общество с ограниченной ответственностью «Прогресс сотрудничества»",address:"Кыргызская Республика, г.Бишкек, Октябрьский район, ул. Кулмурзаева (ж/м Көк-Жар), 81",info:"зарегистрированным от 24 сентября 2025 года Министерством Юстиции Кыргызской Республики, регистрационный № 320537-3301-000.",activity:"46.90.0 Оптовая неспециализированная торговля",inn:"02409202510144",okpo:"34237009",reg_type:"зарегистрирована",reg_date:"24.09.2025",reg_num:"320537-3301-000",director:"ЛЮ ЛИБО"},
-  {id:"3",name:"Ван тай",full_name:"Общество с ограниченной ответственностью «Ван тай»",address:"Кыргызская Республика, Чуйская область, Токмок, ул.Заводская 70",info:"зарегистрированным от 14 октября 2021 года Министерством Юстиции Кыргызской Республики, регистрационный № 200616-3300-000.",activity:"Строительство дорог",inn:"01410202110257",okpo:"31280312",reg_type:"зарегистрирована",reg_date:"14.10.2021",reg_num:"200616-3300-000",director:"Ван Шоувэнь"},
-  {id:"4",name:"Вангуард групп",full_name:"Общество с ограниченной ответственностью «Вангуард групп»",address:"Кыргызская Республика, Чуйская область, г Бишкек, ул.Бул.Эркиндик, 145",info:"зарегистрированным от 29 января 2020 года Министерством Юстиции Кыргызской Республики, регистрационный № 188767-3301-ООО",activity:"Деятельность в области инженерных изысканий и предоставление технических консультаций в этих областях",inn:"02901202010270",okpo:"30712749",reg_type:"зарегистрирована",reg_date:"29.01.2020",reg_num:"188767-3301-ООО",director:"Чэнь Жилу"},
-  {id:"5",name:"Прогресс Сотрудничества",full_name:"Общество с ограниченной ответственностью «Прогресс Сотрудничества»",address:"Кыргызская Республика, Чуйская область, г Бишкек, Ленинский район ул.Боконбаева, 249",info:"зарегистрированным от 18 августа 2023 года Министерством Юстиции Кыргызской Республики, регистрационный № 221185-3301-ООО",activity:"Розничная торговля автомобилями и легкими автотранспортными средствами",inn:"01808202310231",okpo:"32082778",reg_type:"зарегистрирована",reg_date:"18.08.2023",reg_num:"221185-3301-ООО",director:"Фан Цзиган"},
-  {id:"6",name:"Малин Ресурс",full_name:"Общество с ограниченной ответственностью «Малин Ресурс»",address:"Кыргызская Республика, Чуйская область, Октябрьский район, ул.Юнусалиева, 173/6 58",info:"зарегистрированным от 24 октября 2019 года Министерством Юстиции Кыргызской Республики, регистрационный № 186722-3301-ООО",activity:"Добыча известняка и гипса",inn:"02410201910244",okpo:"30418352",reg_type:"зарегистрирована",reg_date:"24.10.2019",reg_num:"186722-3301-ООО",director:"Лин Янксиан"},
-  {id:"7",name:"Центральноазиатская горнодобывающая группа Хуасинь",full_name:"Общество с ограниченной ответственностью «Центральноазиатская горнодобывающая группа Хуасинь»",address:"Кыргызская Республика, г. Бишкек, Ленинский район, пр. Ч.Айтматова, д. 97/1, кв. 84",info:"зарегистрированным 24 октября 2023 года Чуй-Бишкекским управлением юстиции, регистрационный № 223539-3301-ООО",activity:"08.99.9 добыча прочих природных минералов и горных пород",inn:"02410202310589",okpo:"32306338",reg_type:"зарегистрирована",reg_date:"24.10.2023",reg_num:"223539-3301-ООО",director:"Хуан Жунбинь"},
-  {id:"8",name:"Панда Плеер Анимейшн Технолоджи",full_name:"Общество с ограниченной ответственностью «Панда Плеер Анимейшн Технолоджи»",address:"Юр. адрес: Кыргызская Республика, г. Бишкек, Ленинский район, пр. Ч. Айтматова, 3, ТРЦ «Азия Молл»",info:"зарегистрировано 04 июля 2024 года, регистрационный № 305644-3301-ООО.",activity:"93.29.0 Прочая деятельность по организации отдыха и развлечений",inn:"00407202410306",okpo:"33110732",reg_type:"зарегистрирована",reg_date:"04.07.2024",reg_num:"305644-3301-ООО",director:"Фэнг Сиюань"},
-  {id:"9",name:"SafPlast",full_name:"Общество с ограниченной ответственностью «SafPlast» (СафПласт)",address:"Чынгыз Айтматова 243, бизнес центр А плюс, 2 этаж, офис 5",info:"перерегистрировано 17 сентября 2021 года, регистрационный № 113472-3301-ООО.",activity:"Добыча прочих природных минералов и горных пород",inn:"02009201010158",okpo:"27223219",reg_type:"перерегистрирована",reg_date:"17.09.2021",reg_num:"113472-3301-ООО",director:"Янг Цзяньюнь"},
-  {id:"10",name:"Чжунцзи",full_name:"Общество с ограниченной ответственностью «Чжунцзи продажа и аренда строительной техники»",address:"Кыргызская Республика, г. Бишкек, Октябрьский район, 4 микрорайон, 14а, кв. 7",info:"зарегистрировано 03 июня 2025 года, регистрационный № 316664-3301-ООО.",activity:"Аренда строительных машин и оборудования (77.32.0)",inn:"00306202510290",okpo:"33944035",reg_type:"зарегистрировано",reg_date:"03.06.2025",reg_num:"316664-3301-ООО",director:"Хань Чэнжунь"},
-  {id:"11",name:"Хаолинь",full_name:"Общество с ограниченной ответственностью «Хаолинь»",address:"Кыргызская Республика, г Бишкек, Свердловский район, ул.Куренкеева, 101",info:"зарегистрированным от 7 октября 2025 года, регистрационный № 320966-3301-ООО",activity:"Оптовая неспециализированная торговля",inn:"00710202510078",okpo:"34272885",reg_type:"зарегистрирована",reg_date:"07.10.2025",reg_num:"320966-3301-ООО",director:"Сю Цзюньцзе"},
-  {id:"12",name:"Чаоян",full_name:"Общество с ограниченной ответственностью «Дочерняя инжиниринговая компания Чаоян по строительству и отделке»",address:"Кыргызская Республика, г. Бишкек, Октябрьский район, ул. Тон (ж/м Кок-Жар), 33",info:"зарегистрировано 10 апреля 2026 года, регистрационный № 327836-3301-ООО.",activity:"Строительство жилых и нежилых зданий (41.20.0)",inn:"01004202610585",okpo:"34847133",reg_type:"зарегистрировано",reg_date:"10.04.2026",reg_num:"327836-3301-ООО",director:"Ван Юйчао"},
-  {id:"13",name:"Автосервис Эксперт 028",full_name:"Общество с ограниченной ответственностью «Автосервис Эксперт 028»",address:"Кыргызская Республика, г. Бишкек, Первомайский район, пер. Офицерский, д. 10",info:"зарегистрированным от 02 июля 2025 года Чуй-Бишкекским управлением юстиции, регистрационный № 317606-3301-ООО",activity:"Техническое обслуживание и ремонт прочих автомобилей",inn:"00207202510291",okpo:"34013540",reg_type:"зарегистрирована",reg_date:"02.07.2025",reg_num:"317606-3301-ООО",director:"Цзэн Цян"},
-  {id:"14",name:"Центральноазиатская группа Цзинцзэ",full_name:"Общество с ограниченной ответственностью «Центральноазиатская группа Цзинцзэ»",address:"Кыргызская Республика, г. Бишкек, Октябрьский район, ул. Тон (ж/м Кок-Жар), 33",info:"зарегистрировано 31 марта 2026 года, регистрационный № 327321-3301-ООО.",activity:"Оптовая торговля прочими строительными материалами (46.73.9)",inn:"03103202610403",okpo:"34812413",reg_type:"зарегистрировано",reg_date:"31.03.2026",reg_num:"327321-3301-ООО",director:"Ван Чанцзе"},
-  {id:"15",name:"Алнеф Групп",full_name:"Общество с ограниченной ответственностью «Алнеф Групп»",address:"Кыргызская Республика, г. Бишкек, Первомайский район, переулок Клубный, 18, кв. 7",info:"зарегистрировано 26 февраля 2026 года, регистрационный № 326208-3301-ООО",activity:"46.39.0 Неспециализированная оптовая торговля пищевыми продуктами",inn:"02602202610556",okpo:"34718393",reg_type:"зарегистрировано",reg_date:"26.02.2026",reg_num:"326208-3301-ООО",director:"МАЙВУЛА МУХАТАР"},
-  {id:"16",name:"Avanterra Medical Group",full_name:"Общество с ограниченной ответственностью «Avanterra Medical Group» (Авантерра Медикал Групп)",address:"Кыргызская Республика, г. Бишкек, Свердловский район, ул. Дзержинского, 183",info:"зарегистрировано 12 марта 2026 года, регистрационный № 326613-3301-ООО",activity:"Оптовая торговля фармацевтическими товарами",inn:"01203202610211",okpo:"34755419",reg_type:"зарегистрирована",reg_date:"12.03.2026",reg_num:"326613-3301-ООО",director:"Чжан Лиган"},
-  {id:"17",name:"Среднеазиатская Глобальная Инжиниринговая Компания",full_name:"Общество с ограниченной ответственностью «Среднеазиатская Глобальная Инжиниринговая Компания»",address:"Чынгыз Айтматова 243, бизнес центр А плюс, 2 этаж, офис 5",info:"зарегистрировано 09 июля 2025 года, регистрационный № 317765-3301-ООО",activity:"46.90.0 Оптовая неспециализированная торговля",inn:"00907202510028",okpo:"34028412",reg_type:"зарегистрировано",reg_date:"09.07.2025",reg_num:"317765-3301-ООО",director:"ЛЮ БАОЦЗЯНЬ"},
-  {id:"18",name:"Инженерная компания Фуюань",full_name:"Общество с ограниченной ответственностью «Инженерная компания «Фуюань»",address:"Юр. адрес: Кыргызская Республика, г. Бишкек, Ленинский район, ул. Чатыр-Көл (ж/м Арча-Бешик), д. 41",info:"зарегистрирована 27 апреля 2026 года, регистрационный № 328514-3301-ООО.",activity:"08.99.9 Добыча прочих природных минералов и горных пород",inn:"02704202610522",okpo:"34894829",reg_type:"зарегистрирована",reg_date:"27.04.2026",reg_num:"328514-3301-ООО",director:"Чжэн Цзыюань"},
-  {id:"19",name:"Хуацзинь",full_name:"Общество с ограниченной ответственностью «Хуацзинь»",address:"Кыргызская Республика, г. Бишкек, Первомайский район, ул. Кудрука, 4",info:"зарегистрировано 16 июня 2026 года, регистрационный № 330235-3301-ООО.",activity:"55.10.0 Предоставление услуг гостиницами",inn:"01606202610231",okpo:"35018841",reg_type:"зарегистрирована",reg_date:"16.06.2026",reg_num:"330235-3301-ООО",director:"Ню Шаньсюэ"},
-  {id:"20",name:"Кыргызско-Китайский инвестиционный Холдинг",full_name:"Общество с ограниченной ответственностью «Кыргызско-Китайский инвестиционный Холдинг»",address:"Кыргызская Республика, г.Бишкек, Первомайский район, ул. Панфилова, 178, этаж 6, офис 605",info:"перерегистрированным от 03 октября 2024 года, регистрационный № 224419-3301-ООО",activity:"68.12.0 Покупка и продажа собственного недвижимого имущества",inn:"02011202310274",okpo:"32316348",reg_type:"перерегистрирована",reg_date:"03.10.2024",reg_num:"224419-3301-ООО",director:"КЕРИМБЕКОВ КАЙРАТ КЫЛЫЧБЕКОВИЧ"},
-  {id:"21",name:"Шылин",full_name:"Общество с ограниченной ответственностью «Шылин»",address:"Кыргызская Республика, г.Бишкек, Октябрьский район, ул. Юнусалиева, 173/6, кв.58",info:"зарегистрированным 07 октября 2020 года, регистрационный № 192953-3300-ООО",activity:"Добыча прочих природных минералов и горных пород",inn:"00710202010036",okpo:"30837646",reg_type:"зарегистрирована",reg_date:"07.10.2020",reg_num:"192953-3300-ООО",director:"ЛИН ЯНКСИАН"},
-  {id:"22",name:"Торговая компания Лиян",full_name:"Общество с ограниченной ответственностью «Торговая компания Лиян»",address:"Кыргызская Республика, Чуйская область, Аламудунский район, Лебединовка, пр.Победы, 263",info:"зарегистрированным 20 февраля 2019 года, регистрационный № 180917-3300-ООО",activity:"45.11.9 Розничная торговля автомобилями и легкими автотранспортными средствами",inn:"02002201910121",okpo:"30486017",reg_type:"зарегистрирована",reg_date:"20.02.2019",reg_num:"180917-3300-ООО",director:"ВАН ШАША"},
-  {id:"23",name:"Минерал Инвест Групп",full_name:"Общество с ограниченной ответственностью «Минерал Инвест Групп»",address:"Кыргызская Республика, г.Бишкек, Октябрьский район, Элебаева, 63, Кв 15",info:"перерегистрированным от 15 июля 2025 года, регистрационный № 315266-3301-ООО",activity:"08.12.1 Добыча гравия и песка",inn:"01604202510501",okpo:"33835122",reg_type:"перерегистрирована",reg_date:"15.07.2025",reg_num:"315266-3301-ООО",director:"МАТРАИМОВ АБДУЛЛА ИСРАИЛЖАНОВИЧ"},
-  {id:"24",name:"Чжуня Чжиен Чжу",full_name:"Общество с ограниченной ответственностью «Чжуня Чжиен Чжу»",address:"Кыргызская Республика, г.Бишкек, Ленинский район, пр.Чынгыз Айтматова, 97/1, 84",info:"перерегистрированным от 28 марта 2025 года, регистрационный № 225597-3301-ООО",activity:"Консультирование по вопросам коммерческой деятельности и управления 70.22.0",inn:"02512202310053",okpo:"32429213",reg_type:"перерегистрирована",reg_date:"28.03.2025",reg_num:"225597-3301-ООО",director:"Чэнь Хунвэй"}
-];
+const DFLT = window.VD_DEFAULT_COMPANIES;
 
 let DB = [], editId = null;
 const TPL = { oby: null, zay: null, trud: null };
@@ -662,7 +686,7 @@ function pad(n) { return String(n).padStart(2,'0'); }
 
 /* ═══ TABS ═══ */
 function sw(t) {
-  ['oby','zay','trud','scan','comp','viz'].forEach(x => {
+  ['rep','oby','zay','trud','scan','comp','viz'].forEach(x => {
     document.getElementById('panel-'+x).classList.remove('on');
     document.getElementById('tab-'+x).classList.remove('on');
   });
@@ -670,6 +694,7 @@ function sw(t) {
   document.getElementById('tab-'+t).classList.add('on');
   if (t==='comp') renderComp();
   if (t==='viz') renderVisas();
+  if (t==='rep') renderReport();
 }
 
 /* ═══ SELECTS ═══ */
@@ -719,12 +744,55 @@ const VISA_STATUSES = [
 let VDB = [];
 let editingVisaId = null;
 
-function loadVDB() {
-  const s = localStorage.getItem('vd_visas');
-  if (s) { try { VDB = JSON.parse(s); return; } catch(e){} }
-  VDB = [];
+/* ═══ УЧЁТ ВИЗ: общая база (каждая виза — отдельная строка на сервере) ═══ */
+let lastVisaJson = '';
+let visaEpoch = 0;          // растёт при каждом нашем изменении: устаревший ответ опроса отбрасывается
+let visaOnline = true;
+let visaUpdatedAt = null;
+
+async function visaReq(method, url, body) {
+  const r = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) { const e = new Error(j.error || ('Ошибка ' + r.status)); e.status = r.status; throw e; }
+  return j;
 }
-function saveVDB() { localStorage.setItem('vd_visas', JSON.stringify(VDB)); }
+function renderVisaHint() {
+  const el = document.getElementById('viz-sync-hint');
+  if (!el) return;
+  el.textContent = visaOnline
+    ? '🔄 общая база · обновляется автоматически' + (visaUpdatedAt ? ' · ' + pad(visaUpdatedAt.getHours()) + ':' + pad(visaUpdatedAt.getMinutes()) + ':' + pad(visaUpdatedAt.getSeconds()) : '')
+    : '⚠️ нет связи с сервером — список может быть неактуален';
+}
+// Забирает список с сервера; перерисовывает только если он изменился.
+async function refreshVisas(force) {
+  const epoch = visaEpoch;
+  try {
+    const r = await fetch('/api/visas');
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const list = await r.json();
+    visaOnline = true; visaUpdatedAt = new Date();
+    if (epoch !== visaEpoch) return;                       // за время запроса сами что-то поменяли — подождём следующего опроса
+    const j = JSON.stringify(list);
+    if (force || j !== lastVisaJson) { lastVisaJson = j; VDB = list; renderVisas(); }
+  } catch (e) { visaOnline = false; }
+  renderVisaHint();
+}
+// Однократно переносим в общую базу то, что лежало в этом браузере (старый локальный список).
+async function importLegacyVisas() {
+  try {
+    if (localStorage.getItem('vd_visas_imported') === '1') return;
+    let local = [];
+    try { local = JSON.parse(localStorage.getItem('vd_visas') || '[]'); } catch (e) {}
+    if (Array.isArray(local) && local.length) await visaReq('POST', '/api/visas/import', { records: local });
+    localStorage.setItem('vd_visas_imported', '1');
+  } catch (e) { /* попробуем при следующем открытии страницы */ }
+}
+async function initVisas() {
+  await importLegacyVisas();
+  await refreshVisas(true);
+  setInterval(() => { if (!document.hidden) refreshVisas(); }, 5000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshVisas(); });
+}
 
 function isoToday() {
   const d = new Date();
@@ -767,7 +835,7 @@ function statusMeta(v) {
   return VISA_STATUSES.find(s => s.v === v) || VISA_STATUSES[0];
 }
 
-function submitVisaForm() {
+async function submitVisaForm() {
   const company = document.getElementById('viz-co').value.trim();
   const fio = document.getElementById('viz-fio').value.trim();
   const num = document.getElementById('viz-num').value.trim();
@@ -779,28 +847,32 @@ function submitVisaForm() {
 
   if (!company || !fio) { toast('Укажите компанию и ФИО', 'err'); return; }
 
-  if (editingVisaId) {
-    const rec = VDB.find(x => x.id === editingVisaId);
-    if (!rec) { cancelEditVisa(); return; }
-    Object.assign(rec, { company, fio, num, status, type, submit, review, exec, synced: false });
-    saveVDB();
-    renderVisas();
-    toast('Запись обновлена', 'ok');
-    syncVisa(rec.id);
-    cancelEditVisa();
-  } else {
-    const rec = {
-      id: 'v' + Date.now(),
-      company, fio, num, status, type,
-      submit, review, exec,
-      synced: false
-    };
-    VDB.unshift(rec);
-    saveVDB();
-    renderVisas();
-    toast('Запись добавлена', 'ok');
-    syncVisa(rec.id);
+  const btn = document.getElementById('viz-submit-btn');
+  btn.disabled = true;
+  visaEpoch++;
+  try {
+    if (editingVisaId) {
+      const saved = await visaReq('PATCH', '/api/visas/' + encodeURIComponent(editingVisaId), { company, fio, num, status, type, submit, review, exec, synced: false });
+      const i = VDB.findIndex(x => x.id === saved.id);
+      if (i >= 0) VDB[i] = saved; else VDB.unshift(saved);
+      renderVisas();
+      toast('Запись обновлена', 'ok');
+      syncVisa(saved.id);
+      cancelEditVisa();
+    } else {
+      const saved = await visaReq('POST', '/api/visas', { company, fio, num, status, type, submit, review, exec });
+      VDB.unshift(saved);
+      renderVisas();
+      toast('Запись добавлена', 'ok');
+      syncVisa(saved.id);
+    }
+  } catch (e) {
+    if (e.status === 404) { toast('Эту запись уже удалили. Список обновлён.', 'err'); cancelEditVisa(); refreshVisas(true); }
+    else toast('Не удалось сохранить: ' + e.message, 'err');
+    btn.disabled = false;
+    return;
   }
+  btn.disabled = false;
 
   document.getElementById('viz-fio').value = '';
   document.getElementById('viz-num').value = '';
@@ -835,18 +907,77 @@ function cancelEditVisa() {
   document.getElementById('viz-cancel-btn').style.display = 'none';
 }
 
-function delVisa(id) {
+async function delVisa(id) {
   const r = VDB.find(x => x.id === id);
   if (!r) return;
-  if (!confirm(`Удалить запись "${r.fio}"? В самой Google Таблице строку нужно будет удалить вручную.`)) return;
+  if (!confirm(`Удалить запись "${r.fio}" для всех сотрудников? В самой Google Таблице строку нужно будет удалить вручную.`)) return;
+  visaEpoch++;
+  try {
+    await visaReq('DELETE', '/api/visas/' + encodeURIComponent(id));
+  } catch (e) {
+    if (e.status !== 404) { toast('Не удалось удалить: ' + e.message, 'err'); return; }
+  }
   if (editingVisaId === id) cancelEditVisa();
   VDB = VDB.filter(x => x.id !== id);
-  saveVDB();
   renderVisas();
-  toast('Запись удалена локально', 'ok');
+  toast('Запись удалена', 'ok');
+}
+
+/* ═══ ОТЧЁТ ═══ */
+const RU_MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const RU_MONTHS_GEN = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+const RU_WEEKDAYS = ['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
+let repReady = false;
+function isoOf(d) { return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+// границы периодов (включительно, строки YYYY-MM-DD); неделя — с понедельника
+function repRange(kind, now) {
+  const y = now.getFullYear(), m = now.getMonth();
+  if (kind === 'today') return [isoOf(now), isoOf(now)];
+  if (kind === 'week') { const mon = new Date(now); mon.setDate(now.getDate() - ((now.getDay() + 6) % 7)); const sun = new Date(mon); sun.setDate(mon.getDate() + 6); return [isoOf(mon), isoOf(sun)]; }
+  if (kind === 'month') return [isoOf(new Date(y, m, 1)), isoOf(new Date(y, m + 1, 0))];
+  if (kind === 'prevmonth') return [isoOf(new Date(y, m - 1, 1)), isoOf(new Date(y, m, 0))];
+  if (kind === 'year') return [y + '-01-01', y + '-12-31'];
+  return ['0000-01-01', '9999-12-31'];
+}
+function repInit() {
+  repReady = true;
+  document.getElementById('rep-status').innerHTML = '<option value="">Все</option>' + VISA_STATUSES.map(s => `<option value="${esc(s.v)}">${esc(s.v)}</option>`).join('');
+  document.getElementById('rep-type').innerHTML = '<option value="">Все</option>' + Object.keys(VISA_TYPES).map(t => `<option value="${esc(t)}">${esc(t)}</option>`).join('');
+  document.getElementById('rep-exec').innerHTML = '<option value="">Все</option>' + EXECUTORS.map(e => `<option value="${esc(e)}">${esc(e)}</option>`).join('');
+}
+function renderReport() {
+  if (!document.getElementById('rep-table')) return;
+  if (!repReady) repInit();
+  const now = new Date();
+  const fStatus = document.getElementById('rep-status').value, fType = document.getElementById('rep-type').value, fExec = document.getElementById('rep-exec').value;
+  const period = document.getElementById('rep-period').value;
+  const recs = VDB.filter(r => r.submit && (!fStatus || r.status === fStatus) && (!fType || r.type === fType) && (!fExec || r.exec === fExec));
+  const count = (list, kind) => { const [a, b] = repRange(kind, now); return list.filter(r => r.submit >= a && r.submit <= b).length; };
+
+  document.getElementById('rep-date').textContent = `${now.getDate()} ${RU_MONTHS_GEN[now.getMonth()]} ${now.getFullYear()}`;
+  document.getElementById('rep-date-sub').textContent = `${RU_WEEKDAYS[now.getDay()]} · отчётный месяц: ${RU_MONTHS[now.getMonth()]} ${now.getFullYear()}`;
+
+  const titles = { today: 'за сегодня', week: 'за эту неделю', month: `за ${RU_MONTHS[now.getMonth()].toLowerCase()} ${now.getFullYear()}`,
+    prevmonth: 'за прошлый месяц', year: `за ${now.getFullYear()} год`, all: 'за всё время' };
+  const total = count(recs, period);
+  document.getElementById('rep-total-title').textContent = 'Оформлено виз ' + titles[period];
+  document.getElementById('rep-total').textContent = total;
+  document.getElementById('rep-total-sub').textContent = `сегодня: ${count(recs, 'today')} · за неделю: ${count(recs, 'week')} · за месяц: ${count(recs, 'month')}`;
+
+  // сотрудники: из списка исполнителей + все, кто встречается в записях
+  const names = EXECUTORS.slice();
+  recs.forEach(r => { const e = r.exec || 'Без исполнителя'; if (!names.includes(e)) names.push(e); });
+  let rows = names.map(n => { const mine = recs.filter(r => (r.exec || 'Без исполнителя') === n); return { n, d: count(mine, 'today'), w: count(mine, 'week'), m: count(mine, 'month') }; });
+  if (fExec) rows = rows.filter(r => r.n === fExec);
+  rows.sort((a, b) => b.m - a.m || b.w - a.w || b.d - a.d || a.n.localeCompare(b.n, 'ru'));
+  const sum = k => rows.reduce((t, r) => t + r[k], 0);
+  document.querySelector('#rep-table thead').innerHTML = '<tr><th>Сотрудник</th><th class="n">Сегодня</th><th class="n">За неделю</th><th class="n">За месяц</th></tr>';
+  document.querySelector('#rep-table tbody').innerHTML = rows.map(r => `<tr><td>${esc(r.n)}</td><td class="n">${r.d}</td><td class="n">${r.w}</td><td class="n">${r.m}</td></tr>`).join('') +
+    (rows.length > 1 ? `<tr class="tot"><td>Всего</td><td class="n">${sum('d')}</td><td class="n">${sum('w')}</td><td class="n">${sum('m')}</td></tr>` : '');
 }
 
 function renderVisas() {
+  renderReport();
   document.getElementById('viz-count').textContent = VDB.length;
   const thead = document.querySelector('#viz-table thead');
   const tbody = document.querySelector('#viz-table tbody');
@@ -931,7 +1062,8 @@ async function syncVisa(id) {
     const data = await res.json().catch(() => null);
     if (res.ok && data && data.ok) {
       rec.synced = true;
-      saveVDB();
+      visaEpoch++;
+      visaReq('PATCH', '/api/visas/' + encodeURIComponent(rec.id), { synced: true }).catch(() => {});
       renderVisas();
       updateConnDot('ok');
       toast('Запись отправлена в Google Таблицу', 'ok');
@@ -1493,7 +1625,15 @@ function copyAllScanCo() {
 /* ═══ COMPANIES ═══ */
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
+let compView = (function(){ try { return localStorage.getItem('bsp_view') || localStorage.getItem('cl_view') || 'cards'; } catch(e){ return 'cards'; } })();
+function setCompView(v) {
+  compView = v; try { localStorage.setItem('bsp_view', v); } catch(e){}
+  document.querySelectorAll('#panel-comp .viewsw button').forEach(b => b.classList.toggle('on', b.getAttribute('data-view') === v));
+  renderComp();
+}
+document.addEventListener('click', e => { const b = e.target.closest('#panel-comp .viewsw button'); if (b) setCompView(b.getAttribute('data-view')); });
 function renderComp() {
+  document.querySelectorAll('#panel-comp .viewsw button').forEach(b => b.classList.toggle('on', b.getAttribute('data-view') === compView));
   const q = (document.getElementById('search').value||'').toLowerCase();
   const list = DB.filter(c =>
     c.name.toLowerCase().includes(q) ||
@@ -1504,7 +1644,15 @@ function renderComp() {
   document.getElementById('stats').innerHTML =
     `<div class="chip">Всего: <strong>${DB.length}</strong></div>${q?`<div class="chip">Найдено: <strong>${list.length}</strong></div>`:''}`;
   const g = document.getElementById('cgrid');
-  if (!list.length) { g.innerHTML='<div class="nores">🔍 Компании не найдены</div>'; return; }
+  if (!list.length) { g.className = 'cgrid'; g.innerHTML='<div class="nores">🔍 Компании не найдены</div>'; return; }
+  if (compView === 'list') {
+    g.className = 'vtable-wrap';
+    g.innerHTML = `<table class="vtable"><thead><tr><th>№</th><th>Название</th><th>Директор</th><th>ИНН</th><th>ОКПО</th><th>Адрес</th><th></th></tr></thead><tbody>` +
+      list.map(c=>`<tr><td>${esc(c.id)}</td><td><strong>${esc(c.name)}</strong></td><td>${esc(c.director)}</td><td>${esc(c.inn)}</td><td>${esc(c.okpo||'')}</td><td>${esc(c.address)}</td>
+        <td style="white-space:nowrap"><button class="btn bg bsm" onclick="openM('${c.id}')" title="Редактировать">✏️</button> <button class="btn bd bsm" onclick="delC('${c.id}')" title="Удалить">🗑️</button></td></tr>`).join('') + `</tbody></table>`;
+    return;
+  }
+  g.className = 'cgrid';
   g.innerHTML = list.map(c=>`
     <div class="cc">
       <div class="cch">
@@ -1680,7 +1828,7 @@ function checkLibraries() {
     toast('Не удалось загрузить библиотеки для генерации .docx. Проверьте интернет-соединение и обновите страницу (F5).', 'err');
   }
 }
-document.addEventListener('DOMContentLoaded', ()=>{ loadDB(); fillSels(); renderComp(); initEmbeddedTemplates(); initTrudDates(); setTimeout(checkLibraries, 1200); loadVDB(); initVizForm(); renderVisas(); });
+document.addEventListener('DOMContentLoaded', ()=>{ loadDB(); fillSels(); renderComp(); initEmbeddedTemplates(); initTrudDates(); setTimeout(checkLibraries, 1200); initVizForm(); renderVisas(); initVisas(); });
 </script>
 </body>
 </html>

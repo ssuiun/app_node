@@ -130,20 +130,6 @@
     .bp:hover, .bs:hover, .bg:hover, .akt-rm:hover, .btn:active { transform: none !important; }
     .mov, .modal, .toast { transition-duration: .12s !important; }
   }
-.akt-hero{
-  position:relative;height:150px;overflow:hidden;
-  background-image:linear-gradient(100deg, rgba(30,12,8,.75) 0%, rgba(30,12,8,.4) 45%, rgba(30,12,8,.08) 75%), url('assets/img/hero-kyrgyzstan.jpg');
-  background-size:cover;background-position:center 55%;
-  display:flex;align-items:center;padding:0 2rem;
-}
-.akt-hero::after{
-  content:"";position:absolute;top:-30px;right:-30px;width:150px;height:150px;opacity:.14;pointer-events:none;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='44' fill='none' stroke='%23ffffff' stroke-width='3'/%3E%3Ccircle cx='50' cy='50' r='18' fill='none' stroke='%23ffffff' stroke-width='3'/%3E%3Cg stroke='%23ffffff' stroke-width='3' stroke-linecap='round'%3E%3Cline x1='50' y1='6' x2='50' y2='94'/%3E%3Cline x1='6' y1='50' x2='94' y2='50'/%3E%3Cline x1='18.5' y1='18.5' x2='81.5' y2='81.5'/%3E%3Cline x1='81.5' y1='18.5' x2='18.5' y2='81.5'/%3E%3C/g%3E%3C/svg%3E");
-  background-size:contain;background-repeat:no-repeat;
-}
-.akt-hero-cn{font-family:var(--heading-font);font-size:.95rem;font-weight:600;color:var(--acc2);letter-spacing:.04em;margin-bottom:.15rem;font-style:italic}
-.akt-hero-title{font-family:var(--heading-font);font-size:1.3rem;font-weight:700;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.4)}
-@media (max-width:700px){.akt-hero{height:110px;padding:0 1.2rem}.akt-hero-title{font-size:1.05rem}}
 </style>
 </head>
 <body>
@@ -160,13 +146,6 @@
     <button class="btn bg btn-settings" id="btn-settings" onclick="openSettings()" title="Настройки оформления">⚙️</button>
   </div>
 </header>
-
-<div class="akt-hero" role="img" aria-label="Горы Тянь-Шаня на закате">
-  <div class="akt-hero-copy">
-    <div class="akt-hero-cn">«Улук иштер кичине кадамдардан башталат»</div>
-    <div class="akt-hero-title">Документы, которым доверяют</div>
-  </div>
-</div>
 
 <main>
   <div class="grid2">

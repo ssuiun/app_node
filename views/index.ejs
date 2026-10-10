@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Serif:wght@600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="bsp-theme.css" />
+<script src="/app-theme.js" data-key="bsp_theme"></script>
 <style>
   html,body{margin:0;padding:0}
   .bsp-main{overflow:hidden}
@@ -30,6 +31,25 @@
   .bsp-shell.sb-collapsed .bsp-sidebar{display:none}
   .bsp-shell.sb-collapsed .sb-toggle{left:0}
   @media (max-width:900px){.sb-toggle{display:none}}
+  body.tool-open .agentation-host{display:none}
+  .bsp-two-col{grid-template-columns:minmax(0,420px)}
+  /* Настройки оформления (темы) */
+  /* Боковая панель не зависит от темы: возвращаем ей исходную палитру */
+  .bsp-sidebar{--bsp-red-1:#7a1420;--bsp-gold:#c9a353;--bsp-cream:#faf6ef;--bsp-cream-2:#f3ead9;--bsp-paper:#fffdf8;--bsp-border:#e7d9c0;--bsp-ink:#2b1c14;--bsp-ink-soft:#5b4638;--bsp-muted:#8a7561}
+  .home-tools{display:flex;justify-content:flex-end;margin-bottom:.8rem}
+  .set-btn{border:1px solid var(--bsp-border);background:var(--bsp-paper);color:var(--bsp-ink-soft);border-radius:var(--bsp-radius-sm);padding:.4rem .8rem;font:inherit;font-size:.82rem;font-weight:600;cursor:pointer}
+  .set-btn:hover{border-color:var(--bsp-gold);color:var(--bsp-red-1)}
+  #dlg-settings{border:1px solid var(--bsp-border);border-radius:18px;padding:1.5rem;width:min(460px,94vw);background:var(--bsp-paper);color:var(--bsp-ink);font-family:var(--bsp-font-body);margin:auto;box-shadow:0 20px 70px rgba(0,0,0,.45)}
+  #dlg-settings::backdrop{background:rgba(0,0,0,.6);backdrop-filter:blur(6px)}
+  #dlg-settings h3{margin:0 0 .9rem;font-size:1.1rem}
+  #dlg-settings .lbl{font-size:.8rem;font-weight:500;color:var(--bsp-ink-soft)}
+  .theme-grid{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin-top:.5rem}
+  .theme-opt{display:flex;align-items:center;gap:.6rem;padding:.7rem .85rem;border:1px solid var(--bsp-border);border-radius:8px;cursor:pointer;font-size:.85rem;color:var(--bsp-ink-soft);background:none;font-family:inherit;text-align:left}
+  .theme-opt:hover{border-color:var(--bsp-gold);color:var(--bsp-ink)}
+  .theme-opt.sel{border-color:var(--bsp-red-1);background:color-mix(in srgb,var(--bsp-red-1) 12%,transparent);color:var(--bsp-ink)}
+  .theme-sw{width:26px;height:26px;border-radius:50%;flex-shrink:0;border:2px solid rgba(255,255,255,.25)}
+  .set-actions{display:flex;justify-content:flex-end;margin-top:1.1rem}
+  .set-actions button{border:none;border-radius:8px;padding:.55rem 1.3rem;font:inherit;font-weight:600;font-size:.87rem;cursor:pointer;background:linear-gradient(135deg,var(--bsp-red-1),color-mix(in srgb,var(--bsp-red-1) 58%,#000));color:#fff}
   .bsp-logo-spacer{height:150px}
   @media (max-width:900px){.bsp-logo-spacer{display:none}}
 
@@ -61,7 +81,9 @@
       <a href="javascript:void(0)" id="nav-akt" onclick="openTool('akt')"><span class="ic">📑</span>Акт приёма-передачи</a>
       <a href="javascript:void(0)" id="nav-viz" onclick="openTool('viz')"><span class="ic">🛂</span>Визы и договоры</a>
       <a href="javascript:void(0)" id="nav-kadr" onclick="openTool('kadr')"><span class="ic">👥</span>Кадровые приказы</a>
-      <a href="javascript:void(0)" id="nav-marg" onclick="openTool('marg')"><span class="ic">✅</span>Marginalia</a>
+      <a href="javascript:void(0)" id="nav-cli" onclick="openTool('cli')"><span class="ic">🗂️</span>Клиенты</a>
+      <a href="javascript:void(0)" id="nav-out" onclick="openTool('out')"><span class="ic">📨</span>Исходящие номера</a>
+      <a href="javascript:void(0)" id="nav-marg" onclick="openTool('marg')"><span class="ic">✅</span>Лист задач</a>
       <a href="javascript:void(0)" id="nav-pdf" onclick="openTool('pdf')"><span class="ic">📄</span>PDF-инструменты</a>
     </nav>
 
@@ -85,19 +107,8 @@
 
   <div class="bsp-main">
     <div class="home-scroll" id="home-view">
-      <div class="bsp-hero bsp-hero-photo" style="background-image:linear-gradient(100deg, rgba(35,15,10,.86) 0%, rgba(35,15,10,.55) 38%, rgba(35,15,10,.08) 68%), url('assets/img/hero-kyrgyzstan.jpg')">
-        <div class="hero-copy">
-          <h1>Большие дела<br><span class="hl">начинаются здесь</span></h1>
-          <p>Единая система документов для вашего удобства — акты, визы, кадровые приказы и личные задачи в одном окне.</p>
-          <div class="hero-badges">
-            <span>🛡️ Надёжно</span>
-            <span>⚡ Удобно</span>
-            <span>📈 Современно</span>
-          </div>
-        </div>
-      </div>
-
       <div class="bsp-content">
+        <div class="home-tools"><button type="button" class="set-btn" id="btn-settings" title="Настройки оформления" aria-label="Настройки оформления">⚙️ Оформление</button></div>
         <div class="bsp-grid-4">
           <div class="bsp-tool-card" onclick="openTool('akt')">
             <div class="icon" style="background:linear-gradient(135deg,#c62330,#9c1a22)">📑</div>
@@ -117,9 +128,21 @@
             <div class="desc">Приём, увольнение и кадровые документы</div>
             <div class="go">Открыть →</div>
           </div>
+          <div class="bsp-tool-card" onclick="openTool('cli')">
+            <div class="icon" style="background:linear-gradient(135deg,#8a5a2b,#5a3a1a)">🗂️</div>
+            <div class="title">Клиенты</div>
+            <div class="desc">База данных: карточки компаний и клиентов</div>
+            <div class="go">Открыть →</div>
+          </div>
+          <div class="bsp-tool-card" onclick="openTool('out')">
+            <div class="icon" style="background:linear-gradient(135deg,#3d5a80,#26394f)">📨</div>
+            <div class="title">Исходящие номера</div>
+            <div class="desc">Автоматическая нумерация писем и журнал по каждой компании</div>
+            <div class="go">Открыть →</div>
+          </div>
           <div class="bsp-tool-card" onclick="openTool('marg')">
             <div class="icon" style="background:linear-gradient(135deg,#2e7d5b,#1e5a40)">✅</div>
-            <div class="title">Marginalia</div>
+            <div class="title">Лист задач</div>
             <div class="desc">Личный список задач с комментариями и дедлайнами</div>
             <div class="go">Открыть →</div>
           </div>
@@ -132,14 +155,6 @@
         </div>
 
         <div class="bsp-two-col">
-          <div class="bsp-panel">
-            <h3>💡 Как это работает</h3>
-            <p style="margin:0;color:var(--bsp-ink-soft);font-size:.88rem;line-height:1.6">
-              Выберите инструмент в меню слева или на карточке выше. Все программы открываются в этом же окне —
-              переключайтесь между ними в любой момент, не теряя введённые данные.
-            </p>
-          </div>
-
           <div class="bsp-panel bsp-mini-cal" id="mini-cal">
             <div class="mc-head">
               <span class="mc-title">📅 <span id="mc-title-text"></span></span>
@@ -167,9 +182,17 @@
         <div class="loading" id="load-kadr"><div class="spin"></div>Загрузка…</div>
         <iframe id="frame-kadr" title="Кадровые приказы"></iframe>
       </div>
+      <div class="frame-wrap" id="wrap-cli">
+        <div class="loading" id="load-cli"><div class="spin"></div>Загрузка…</div>
+        <iframe id="frame-cli" title="Клиенты"></iframe>
+      </div>
+      <div class="frame-wrap" id="wrap-out">
+        <div class="loading" id="load-out"><div class="spin"></div>Загрузка…</div>
+        <iframe id="frame-out" title="Исходящие номера"></iframe>
+      </div>
       <div class="frame-wrap" id="wrap-marg">
         <div class="loading" id="load-marg"><div class="spin"></div>Загрузка…</div>
-        <iframe id="frame-marg" title="Marginalia"></iframe>
+        <iframe id="frame-marg" title="Лист задач"></iframe>
       </div>
       <div class="frame-wrap" id="wrap-pdf">
         <div class="loading" id="load-pdf"><div class="spin"></div>Загрузка…</div>
@@ -179,10 +202,22 @@
   </div>
 </div>
 
+<dialog id="dlg-settings">
+  <h3>⚙️ Настройки оформления</h3>
+  <div class="lbl">Цветовая тема приложения</div>
+  <div class="theme-grid" id="theme-grid"></div>
+  <div class="set-actions"><button type="button" id="settings-close">Готово</button></div>
+</dialog>
+
 <script>
-  var SRC = { akt:'akt.html', viz:'visa.html', kadr:'kadr.html', marg:'marginalia.html', pdf:'pdf/' };
-  var loaded = { akt:false, viz:false, kadr:false, marg:false, pdf:false };
-  var NAVS = ['home','akt','viz','kadr','marg','pdf'];
+  /* ---- Настройки оформления ---- */
+  document.getElementById('btn-settings').onclick = function(){ AppTheme.renderGrid(); document.getElementById('dlg-settings').showModal(); };
+  document.getElementById('settings-close').onclick = function(){ document.getElementById('dlg-settings').close(); };
+  document.getElementById('theme-grid').addEventListener('click', function(e){ var b = e.target.closest('[data-theme]'); if (b) AppTheme.apply(b.getAttribute('data-theme')); });
+
+  var SRC = { akt:'akt.html', viz:'visa.html', kadr:'kadr.html', marg:'marginalia.html', out:'outgoing.html', cli:'clients.html', pdf:'pdf/' };
+  var loaded = { akt:false, viz:false, kadr:false, marg:false, out:false, cli:false, pdf:false };
+  var NAVS = ['home','akt','viz','kadr','cli','out','marg','pdf'];
 
   function toggleSidebar(force){
     var shell = document.querySelector('.bsp-shell');
@@ -205,6 +240,7 @@
   function goHome(){
     document.getElementById('home-view').classList.remove('hidden');
     document.getElementById('frame-area').classList.remove('on');
+    document.body.classList.remove('tool-open');
     setActiveNav('home');
     try { history.replaceState(null, '', '#home'); } catch(e){}
   }
@@ -213,9 +249,10 @@
     if (!SRC[key]) return;
     document.getElementById('home-view').classList.add('hidden');
     document.getElementById('frame-area').classList.add('on');
-    ['akt','viz','kadr','marg','pdf'].forEach(function(k){
+    ['akt','viz','kadr','cli','out','marg','pdf'].forEach(function(k){
       document.getElementById('wrap-'+k).classList.toggle('on', k===key);
     });
+    document.body.classList.add('tool-open');
     setActiveNav(key);
 
     if (!loaded[key]){
