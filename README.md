@@ -1,6 +1,6 @@
 # SUKAAA — Railway + PostgreSQL
 
-## Marginalia
+## Лист задач (marginalia.html)
 
 `marginalia.html` теперь хранит список дел в PostgreSQL через API:
 
@@ -9,7 +9,7 @@
 
 Ключ `marginalia_tasks_v2` содержит JSON-массив задач.
 
-При первом открытии Marginalia:
+При первом открытии «Листа задач»:
 1. существующие задачи из PostgreSQL загружаются;
 2. если остались старые задачи в localStorage — они один раз переносятся в PostgreSQL;
 3. если данных нет — создаются стартовые задачи и сохраняются в PostgreSQL.

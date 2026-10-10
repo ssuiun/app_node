@@ -32,6 +32,20 @@
   @media (max-width:900px){.sb-toggle{display:none}}
   body.tool-open .agentation-host{display:none}
   .bsp-two-col{grid-template-columns:minmax(0,420px)}
+  .home-tools{display:flex;justify-content:flex-end;margin-bottom:.8rem}
+  .bg-btn{border:1px solid var(--bsp-border);background:var(--bsp-paper);color:var(--bsp-ink-soft);border-radius:var(--bsp-radius-sm);padding:.4rem .8rem;font:inherit;font-size:.82rem;font-weight:600;cursor:pointer}
+  .bg-btn:hover{border-color:var(--bsp-gold);color:var(--bsp-red-1)}
+  #dlg-bg{border:1px solid var(--bsp-border);border-radius:var(--bsp-radius);padding:1.2rem;width:min(480px,94vw);background:var(--bsp-paper);color:var(--bsp-ink);font-family:var(--bsp-font-body);margin:auto}
+  #dlg-bg::backdrop{background:rgba(30,10,8,.5)}
+  #dlg-bg h3{margin:0 0 .8rem;font-size:1.1rem}
+  .bg-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem}
+  .bg-opt{border:2px solid var(--bsp-border);border-radius:var(--bsp-radius-sm);height:64px;cursor:pointer;display:flex;align-items:flex-end;padding:.25rem .4rem;font:inherit;font-size:.72rem;font-weight:600;color:#2b1c14;text-align:left;background-size:cover;background-position:center}
+  .bg-opt span{background:rgba(255,255,255,.78);border-radius:4px;padding:0 .3rem}
+  .bg-opt.sel{border-color:var(--bsp-red-1)}
+  .bg-actions{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.9rem;align-items:center}
+  .bg-actions button{border:1px solid var(--bsp-border);background:var(--bsp-paper);border-radius:var(--bsp-radius-sm);padding:.45rem .8rem;font:inherit;font-size:.82rem;font-weight:600;cursor:pointer;color:var(--bsp-ink)}
+  .bg-actions .primary{background:var(--bsp-red-1);color:#fff;border-color:var(--bsp-red-1);margin-left:auto}
+  .bg-msg{color:#b3261e;font-size:.8rem;min-height:1.1em;margin-top:.4rem}
   .bsp-logo-spacer{height:150px}
   @media (max-width:900px){.bsp-logo-spacer{display:none}}
 
@@ -64,7 +78,7 @@
       <a href="javascript:void(0)" id="nav-viz" onclick="openTool('viz')"><span class="ic">🛂</span>Визы и договоры</a>
       <a href="javascript:void(0)" id="nav-kadr" onclick="openTool('kadr')"><span class="ic">👥</span>Кадровые приказы</a>
       <a href="javascript:void(0)" id="nav-out" onclick="openTool('out')"><span class="ic">📨</span>Исходящие номера</a>
-      <a href="javascript:void(0)" id="nav-marg" onclick="openTool('marg')"><span class="ic">✅</span>Marginalia</a>
+      <a href="javascript:void(0)" id="nav-marg" onclick="openTool('marg')"><span class="ic">✅</span>Лист задач</a>
       <a href="javascript:void(0)" id="nav-pdf" onclick="openTool('pdf')"><span class="ic">📄</span>PDF-инструменты</a>
     </nav>
 
@@ -89,6 +103,7 @@
   <div class="bsp-main">
     <div class="home-scroll" id="home-view">
       <div class="bsp-content">
+        <div class="home-tools"><button type="button" class="bg-btn" id="bg-btn">🎨 Фон</button></div>
         <div class="bsp-grid-4">
           <div class="bsp-tool-card" onclick="openTool('akt')">
             <div class="icon" style="background:linear-gradient(135deg,#c62330,#9c1a22)">📑</div>
@@ -116,7 +131,7 @@
           </div>
           <div class="bsp-tool-card" onclick="openTool('marg')">
             <div class="icon" style="background:linear-gradient(135deg,#2e7d5b,#1e5a40)">✅</div>
-            <div class="title">Marginalia</div>
+            <div class="title">Лист задач</div>
             <div class="desc">Личный список задач с комментариями и дедлайнами</div>
             <div class="go">Открыть →</div>
           </div>
@@ -162,7 +177,7 @@
       </div>
       <div class="frame-wrap" id="wrap-marg">
         <div class="loading" id="load-marg"><div class="spin"></div>Загрузка…</div>
-        <iframe id="frame-marg" title="Marginalia"></iframe>
+        <iframe id="frame-marg" title="Лист задач"></iframe>
       </div>
       <div class="frame-wrap" id="wrap-pdf">
         <div class="loading" id="load-pdf"><div class="spin"></div>Загрузка…</div>
@@ -172,7 +187,71 @@
   </div>
 </div>
 
+<dialog id="dlg-bg">
+  <h3>🎨 Фон главной страницы</h3>
+  <div class="bg-grid" id="bg-grid"></div>
+  <div class="bg-actions">
+    <button type="button" id="bg-upload">📷 Своё фото…</button>
+    <button type="button" id="bg-reset">Сбросить</button>
+    <button type="button" class="primary" id="bg-close">Готово</button>
+  </div>
+  <input type="file" id="bg-file" accept="image/*" hidden />
+  <div class="bg-msg" id="bg-msg" role="alert"></div>
+</dialog>
+
 <script>
+  /* ---- Фон главной страницы ---- */
+  var BG_PRESETS = [
+    { id:'classic', name:'Классический', css:'' },
+    { id:'sand',    name:'Песочный',     css:'#efe3cf' },
+    { id:'gray',    name:'Светло-серый', css:'#eceae6' },
+    { id:'mint',    name:'Мятный',       css:'#e3eee7' },
+    { id:'sky',     name:'Небесный',     css:'#e3ecf5' },
+    { id:'sunset',  name:'Закат',        css:'linear-gradient(135deg,#f9e6d3,#f0bfa6)' },
+    { id:'dark',    name:'Тёмный',       css:'#2a2220' },
+    { id:'mount',   name:'Горы',         css:"url('assets/img/hero-kyrgyzstan.jpg') center/cover fixed" }
+  ];
+  function bgGet(k){ try { return localStorage.getItem(k) || ''; } catch(e){ return ''; } }
+  function bgApply(){
+    var home = document.getElementById('home-view'), custom = bgGet('bsp_home_bg_img'), id = bgGet('bsp_home_bg') || 'classic';
+    var css = '';
+    if (id === 'custom' && custom) css = "url('" + custom + "') center/cover fixed";
+    else { var p = BG_PRESETS.filter(function(x){ return x.id === id; })[0]; css = p ? p.css : ''; }
+    home.style.background = css;
+    var grid = document.getElementById('bg-grid');
+    grid.innerHTML = BG_PRESETS.map(function(p){
+      var st = p.css ? (p.css.indexOf('url') === 0 ? 'background:' + p.css.replace(' fixed','') : 'background:' + p.css) : 'background:var(--bsp-cream)';
+      return '<button type="button" class="bg-opt' + (id === p.id ? ' sel' : '') + '" data-bg="' + p.id + '" style="' + st + '"><span>' + p.name + '</span></button>';
+    }).join('') + (custom ? '<button type="button" class="bg-opt' + (id === 'custom' ? ' sel' : '') + '" data-bg="custom" style="background:url(\'' + custom + '\') center/cover"><span>Моё фото</span></button>' : '');
+  }
+  function bgSet(id){ try { localStorage.setItem('bsp_home_bg', id); } catch(e){} bgApply(); }
+  document.getElementById('bg-btn').onclick = function(){ document.getElementById('bg-msg').textContent = ''; bgApply(); document.getElementById('dlg-bg').showModal(); };
+  document.getElementById('bg-close').onclick = function(){ document.getElementById('dlg-bg').close(); };
+  document.getElementById('bg-grid').addEventListener('click', function(e){ var b = e.target.closest('[data-bg]'); if (b) bgSet(b.getAttribute('data-bg')); });
+  document.getElementById('bg-reset').onclick = function(){ try { localStorage.removeItem('bsp_home_bg'); localStorage.removeItem('bsp_home_bg_img'); } catch(e){} bgApply(); };
+  document.getElementById('bg-upload').onclick = function(){ document.getElementById('bg-file').click(); };
+  document.getElementById('bg-file').addEventListener('change', function(){
+    var f = this.files[0], msg = document.getElementById('bg-msg'), inp = this; if (!f) return;
+    msg.textContent = '';
+    var img = new Image(), url = URL.createObjectURL(f);
+    img.onload = function(){
+      // уменьшаем фото, чтобы оно поместилось в память браузера
+      var k = Math.min(1, 1920 / Math.max(img.width, img.height)), c = document.createElement('canvas');
+      c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      try {
+        localStorage.setItem('bsp_home_bg_img', c.toDataURL('image/jpeg', 0.8));
+        localStorage.setItem('bsp_home_bg', 'custom');
+        bgApply();
+      } catch(e){ msg.textContent = 'Фото слишком большое для сохранения в браузере. Выберите другое.'; }
+      inp.value = '';
+    };
+    img.onerror = function(){ URL.revokeObjectURL(url); msg.textContent = 'Не удалось открыть файл как изображение.'; inp.value = ''; };
+    img.src = url;
+  });
+  bgApply();
+
   var SRC = { akt:'akt.html', viz:'visa.html', kadr:'kadr.html', marg:'marginalia.html', out:'outgoing.html', pdf:'pdf/' };
   var loaded = { akt:false, viz:false, kadr:false, marg:false, out:false, pdf:false };
   var NAVS = ['home','akt','viz','kadr','out','marg','pdf'];
