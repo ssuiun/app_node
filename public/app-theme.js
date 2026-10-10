@@ -17,6 +17,11 @@
     var root = document.documentElement.style;
     Object.keys(t.vars).forEach(function (k) { root.setProperty(k, t.vars[k]); });
     root.setProperty('--hdr-txt', key === 'light' ? '#2b1c14' : '#fff');
+    // Для оболочки (index.ejs) с переменными --bsp-*: переносим палитру темы на них.
+    var map = { '--bsp-cream': '--bg', '--bsp-cream-2': '--bg2', '--bsp-paper': '--card', '--bsp-border': '--border',
+      '--bsp-ink': '--txt', '--bsp-ink-soft': '--txt2', '--bsp-muted': '--muted', '--bsp-red-1': '--acc', '--bsp-gold': '--acc2' };
+    Object.keys(map).forEach(function (k) { root.setProperty(k, t.vars[map[k]]); });
+    document.documentElement.setAttribute('data-app-theme', key);
     root.colorScheme = key === 'light' || key === 'red' ? 'light' : 'dark';
     current = key;
     if (save !== false) { try { localStorage.setItem(KEY, key); } catch (e) {} }
