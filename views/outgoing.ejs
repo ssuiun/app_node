@@ -10,6 +10,7 @@
 <style>
   :root{--bg:#faf6ef;--bg2:#f3ead9;--card:#fffdf8;--card2:#f3ead9;--border:#e7d9c0;--border2:#d9c6a3;--acc:#9c1a22;--acc2:#c9a353;--acc3:#2e8b57;--txt:#2b1c14;--txt2:#6b5644;--muted:#8a7561;--r:14px;--rs:8px;--tr:.22s cubic-bezier(.4,0,.2,1);--hdr1:#8c1220;--hdr2:#5c0f14;--hdr-txt:#fff;--glow:0 0 18px rgba(156,26,34,.22);--warn:#a8720f}
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  [hidden]{display:none!important}
   body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;line-height:1.6}
   /* HEADER (как в «Визы и договоры») */
   header{background:linear-gradient(135deg,var(--hdr1),var(--hdr2));border-bottom:1px solid var(--border);padding:0 1.5rem;position:sticky;top:0;z-index:100;color:var(--hdr-txt);transition:background .3s ease}
@@ -106,37 +107,7 @@
   .toast{position:fixed;bottom:1.2rem;left:50%;transform:translateX(-50%);background:#2b1c14;color:#fff;padding:.6rem 1.1rem;border-radius:var(--rs);font-size:.85rem;opacity:0;pointer-events:none;transition:opacity .25s;z-index:300}
   .toast.on{opacity:1}
 </style>
-<script>
-/* ═══════ ТЕМЫ ОФОРМЛЕНИЯ (те же, что в «Визы и договоры») ═══════ */
-const THEMES = {
-  red: {name:'Красно-золотой', vars:{'--bg':'#faf6ef','--bg2':'#f3ead9','--card':'#fffdf8','--card2':'#f3ead9','--border':'#e7d9c0','--border2':'#d9c6a3','--acc':'#9c1a22','--acc2':'#c9a353','--acc3':'#2e8b57','--txt':'#2b1c14','--txt2':'#6b5644','--muted':'#8a7561','--hdr1':'#8c1220','--hdr2':'#5c0f14','--glow':'0 0 18px rgba(156,26,34,.22)','--glow2':'0 0 10px rgba(156,26,34,.25)','--logo-txt':'#2b1c14'}},
-  blue: {name:'Тёмно-синий', vars:{'--bg':'#0d1420','--bg2':'#13202f','--card':'#16283a','--card2':'#1a3245','--border':'#22415c','--border2':'#2b5170','--acc':'#2a7fc8','--acc2':'#d4af37','--acc3':'#2e8b57','--txt':'#e9f0f5','--txt2':'#a9c0c9','--muted':'#77939e','--hdr1':'#0a121c','--hdr2':'#0f1c2a','--glow':'0 0 18px rgba(42,127,200,.35)','--glow2':'0 0 10px rgba(42,127,200,.4)','--logo-txt':'#e9f0f5'}},
-  green: {name:'Изумрудный', vars:{'--bg':'#0d1a12','--bg2':'#13241a','--card':'#162b1e','--card2':'#1a3524','--border':'#224a30','--border2':'#2b5c3c','--acc':'#2e8b57','--acc2':'#d4af37','--acc3':'#3498db','--txt':'#e9f5ee','--txt2':'#a9c9b3','--muted':'#6f977f','--hdr1':'#0a140f','--hdr2':'#0f1e16','--glow':'0 0 18px rgba(46,139,87,.35)','--glow2':'0 0 10px rgba(46,139,87,.4)','--logo-txt':'#e9f5ee'}},
-  purple: {name:'Фиолетовый', vars:{'--bg':'#160d20','--bg2':'#20132f','--card':'#28163a','--card2':'#331a45','--border':'#48225c','--border2':'#5a2b70','--acc':'#8e3fc8','--acc2':'#d4af37','--acc3':'#2e8b57','--txt':'#f0e9f5','--txt2':'#c0a9c9','--muted':'#987ea2','--hdr1':'#120a1a','--hdr2':'#1a1128','--glow':'0 0 18px rgba(142,63,200,.35)','--glow2':'0 0 10px rgba(142,63,200,.4)','--logo-txt':'#f0e9f5'}},
-  slate: {name:'Графитовый', vars:{'--bg':'#15171a','--bg2':'#1d2024','--card':'#22262b','--card2':'#282d33','--border':'#383e46','--border2':'#454c56','--acc':'#5c7cfa','--acc2':'#d4af37','--acc3':'#2e8b57','--txt':'#eceef0','--txt2':'#a9b1bb','--muted':'#878e98','--hdr1':'#111317','--hdr2':'#181b1f','--glow':'0 0 18px rgba(92,124,250,.35)','--glow2':'0 0 10px rgba(92,124,250,.4)','--logo-txt':'#eceef0'}},
-  light: {name:'Светлая', vars:{'--bg':'#f5f2ec','--bg2':'#ffffff','--card':'#ffffff','--card2':'#f0ece2','--border':'#ddd3c2','--border2':'#c9bba0','--acc':'#c8282a','--acc2':'#a8862a','--acc3':'#2e8b57','--txt':'#2b1a1a','--txt2':'#5c4530','--muted':'#82735b','--hdr1':'#ffffff','--hdr2':'#f2ece0','--glow':'0 0 12px rgba(200,40,42,.25)','--glow2':'0 0 8px rgba(200,40,42,.3)','--logo-txt':'#2b1c14'}}
-};
-var currentTheme = 'red';
-function applyTheme(key, save){
-  var t = THEMES[key]; if (!t) return;
-  var root = document.documentElement.style;
-  Object.keys(t.vars).forEach(function(k){ root.setProperty(k, t.vars[k]); });
-  root.setProperty('--hdr-txt', key === 'light' ? '#2b1c14' : '#fff');
-  root.colorScheme = key === 'light' || key === 'red' ? 'light' : 'dark';
-  currentTheme = key;
-  if (save !== false) { try { localStorage.setItem('out_theme', key); } catch(e){} }
-  renderThemeGrid();
-}
-function renderThemeGrid(){
-  var g = document.getElementById('theme-grid'); if (!g) return;
-  g.innerHTML = Object.keys(THEMES).map(function(k){
-    var t = THEMES[k];
-    return '<button type="button" class="theme-opt' + (k === currentTheme ? ' sel' : '') + '" data-theme="' + k + '">' +
-      '<span class="theme-sw" style="background:linear-gradient(135deg,' + t.vars['--acc'] + ',' + t.vars['--acc2'] + ')"></span><span>' + t.name + '</span></button>';
-  }).join('');
-}
-(function(){ var saved = null; try { saved = localStorage.getItem('out_theme'); } catch(e){} applyTheme(saved && THEMES[saved] ? saved : 'red', false); })();
-</script>
+<script src="/app-theme.js" data-key="out_theme"></script>
 </head>
 <body>
 <header id="app-header">
@@ -581,9 +552,9 @@ function renderThemeGrid(){
   }
 
   // настройки оформления
-  $('btn-settings').onclick = function(){ renderThemeGrid(); $('dlg-settings').showModal(); };
+  $('btn-settings').onclick = function(){ AppTheme.renderGrid(); $('dlg-settings').showModal(); };
   $('settings-close').onclick = function(){ $('dlg-settings').close(); };
-  $('theme-grid').addEventListener('click', function(e){ var b = e.target.closest('[data-theme]'); if (b) applyTheme(b.getAttribute('data-theme')); });
+  $('theme-grid').addEventListener('click', function(e){ var b = e.target.closest('[data-theme]'); if (b) AppTheme.apply(b.getAttribute('data-theme')); });
 
   // старт
   var initial = (location.hash || '').replace('#','');

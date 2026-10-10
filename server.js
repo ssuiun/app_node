@@ -3,6 +3,7 @@ const path = require('path');
 const { Pool } = require('pg');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const { createOutgoingRouter, initOutgoingSchema, purgeExpiredFiles } = require('./outgoing');
+const { createClientsRouter, initClientsSchema } = require('./clients');
 
 const PORT = Number(process.env.PORT || 3000);
 const HOST = '0.0.0.0';
@@ -26,7 +27,8 @@ async function initDb() {
     )
   `);
   await initOutgoingSchema(pool);
-  console.log('PostgreSQL connected, app_storage and outgoing-letters tables are ready.');
+  await initClientsSchema(pool);
+  console.log('PostgreSQL connected, app_storage and outgoing-letters and clients tables are ready.');
 }
 
 const app = express();
@@ -163,6 +165,9 @@ app.delete('/api/storage', async (req, res) => {
 // ---------- /api/outgoing (учёт исходящих номеров) ----------
 app.use('/api/outgoing', createOutgoingRouter(pool));
 
+// ---------- /api/clients (база клиентов: компании и клиенты) ----------
+app.use('/api/clients', createClientsRouter(pool));
+
 // ---------- Page routes (EJS views, same public URLs as before) ----------
 
 app.get('/', (req, res) => res.render('index'));
@@ -171,6 +176,7 @@ app.get('/visa.html', (req, res) => res.render('visa'));
 app.get('/kadr.html', (req, res) => res.render('kadr'));
 app.get('/marginalia.html', (req, res) => res.render('marginalia'));
 app.get('/outgoing.html', (req, res) => res.render('outgoing'));
+app.get('/clients.html', (req, res) => res.render('clients'));
 
 app.use((req, res) => {
   res.status(404).type('text/plain; charset=utf-8').send('Not found');

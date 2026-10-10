@@ -77,6 +77,7 @@
       <a href="javascript:void(0)" id="nav-akt" onclick="openTool('akt')"><span class="ic">📑</span>Акт приёма-передачи</a>
       <a href="javascript:void(0)" id="nav-viz" onclick="openTool('viz')"><span class="ic">🛂</span>Визы и договоры</a>
       <a href="javascript:void(0)" id="nav-kadr" onclick="openTool('kadr')"><span class="ic">👥</span>Кадровые приказы</a>
+      <a href="javascript:void(0)" id="nav-cli" onclick="openTool('cli')"><span class="ic">🗂️</span>Клиенты</a>
       <a href="javascript:void(0)" id="nav-out" onclick="openTool('out')"><span class="ic">📨</span>Исходящие номера</a>
       <a href="javascript:void(0)" id="nav-marg" onclick="openTool('marg')"><span class="ic">✅</span>Лист задач</a>
       <a href="javascript:void(0)" id="nav-pdf" onclick="openTool('pdf')"><span class="ic">📄</span>PDF-инструменты</a>
@@ -121,6 +122,12 @@
             <div class="icon" style="background:linear-gradient(135deg,#7a3a20,#4a2410)">👥</div>
             <div class="title">Кадровые приказы</div>
             <div class="desc">Приём, увольнение и кадровые документы</div>
+            <div class="go">Открыть →</div>
+          </div>
+          <div class="bsp-tool-card" onclick="openTool('cli')">
+            <div class="icon" style="background:linear-gradient(135deg,#8a5a2b,#5a3a1a)">🗂️</div>
+            <div class="title">Клиенты</div>
+            <div class="desc">База данных: карточки компаний и клиентов</div>
             <div class="go">Открыть →</div>
           </div>
           <div class="bsp-tool-card" onclick="openTool('out')">
@@ -170,6 +177,10 @@
       <div class="frame-wrap" id="wrap-kadr">
         <div class="loading" id="load-kadr"><div class="spin"></div>Загрузка…</div>
         <iframe id="frame-kadr" title="Кадровые приказы"></iframe>
+      </div>
+      <div class="frame-wrap" id="wrap-cli">
+        <div class="loading" id="load-cli"><div class="spin"></div>Загрузка…</div>
+        <iframe id="frame-cli" title="Клиенты"></iframe>
       </div>
       <div class="frame-wrap" id="wrap-out">
         <div class="loading" id="load-out"><div class="spin"></div>Загрузка…</div>
@@ -252,9 +263,9 @@
   });
   bgApply();
 
-  var SRC = { akt:'akt.html', viz:'visa.html', kadr:'kadr.html', marg:'marginalia.html', out:'outgoing.html', pdf:'pdf/' };
-  var loaded = { akt:false, viz:false, kadr:false, marg:false, out:false, pdf:false };
-  var NAVS = ['home','akt','viz','kadr','out','marg','pdf'];
+  var SRC = { akt:'akt.html', viz:'visa.html', kadr:'kadr.html', marg:'marginalia.html', out:'outgoing.html', cli:'clients.html', pdf:'pdf/' };
+  var loaded = { akt:false, viz:false, kadr:false, marg:false, out:false, cli:false, pdf:false };
+  var NAVS = ['home','akt','viz','kadr','cli','out','marg','pdf'];
 
   function toggleSidebar(force){
     var shell = document.querySelector('.bsp-shell');
@@ -286,7 +297,7 @@
     if (!SRC[key]) return;
     document.getElementById('home-view').classList.add('hidden');
     document.getElementById('frame-area').classList.add('on');
-    ['akt','viz','kadr','out','marg','pdf'].forEach(function(k){
+    ['akt','viz','kadr','cli','out','marg','pdf'].forEach(function(k){
       document.getElementById('wrap-'+k).classList.toggle('on', k===key);
     });
     document.body.classList.add('tool-open');
