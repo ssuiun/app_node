@@ -44,9 +44,9 @@
   html[data-app-theme=light] .bsp-user{border-top-color:rgba(0,0,0,.1)}
   html[data-app-theme=light] .bsp-user .name{color:#2b1a1a}
   html[data-app-theme=light] .bsp-user .role{color:#82735b}
-  html[data-app-theme=light] .set-btn{color:#2b1a1a;border-color:rgba(0,0,0,.2);background:rgba(0,0,0,.04)}
-  .set-btn{margin-left:auto;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;border-radius:8px;padding:.3rem .5rem;font-size:.95rem;cursor:pointer;line-height:1}
-  .set-btn:hover{background:rgba(255,255,255,.18)}
+  .home-tools{display:flex;justify-content:flex-end;margin-bottom:.8rem}
+  .set-btn{border:1px solid var(--bsp-border);background:var(--bsp-paper);color:var(--bsp-ink-soft);border-radius:var(--bsp-radius-sm);padding:.4rem .8rem;font:inherit;font-size:.82rem;font-weight:600;cursor:pointer}
+  .set-btn:hover{border-color:var(--bsp-gold);color:var(--bsp-red-1)}
   #dlg-settings{border:1px solid var(--bsp-border);border-radius:18px;padding:1.5rem;width:min(460px,94vw);background:var(--bsp-paper);color:var(--bsp-ink);font-family:var(--bsp-font-body);margin:auto;box-shadow:0 20px 70px rgba(0,0,0,.45)}
   #dlg-settings::backdrop{background:rgba(0,0,0,.6);backdrop-filter:blur(6px)}
   #dlg-settings h3{margin:0 0 .9rem;font-size:1.1rem}
@@ -108,7 +108,6 @@
         <div class="name">Sui</div>
         <div class="role">Business Service Platform</div>
       </div>
-      <button type="button" class="set-btn" id="btn-settings" title="Настройки оформления" aria-label="Настройки оформления">⚙️</button>
     </div>
   </aside>
 
@@ -117,6 +116,7 @@
   <div class="bsp-main">
     <div class="home-scroll" id="home-view">
       <div class="bsp-content">
+        <div class="home-tools"><button type="button" class="set-btn" id="btn-settings" title="Настройки оформления" aria-label="Настройки оформления">⚙️ Оформление</button></div>
         <div class="bsp-grid-4">
           <div class="bsp-tool-card" onclick="openTool('akt')">
             <div class="icon" style="background:linear-gradient(135deg,#c62330,#9c1a22)">📑</div>
