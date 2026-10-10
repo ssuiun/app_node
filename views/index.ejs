@@ -31,6 +31,7 @@
   .bsp-shell.sb-collapsed .sb-toggle{left:0}
   @media (max-width:900px){.sb-toggle{display:none}}
   body.tool-open .agentation-host{display:none}
+  .bsp-two-col{grid-template-columns:minmax(0,420px)}
   .bsp-logo-spacer{height:150px}
   @media (max-width:900px){.bsp-logo-spacer{display:none}}
 
@@ -87,18 +88,6 @@
 
   <div class="bsp-main">
     <div class="home-scroll" id="home-view">
-      <div class="bsp-hero bsp-hero-photo" style="background-image:linear-gradient(100deg, rgba(35,15,10,.86) 0%, rgba(35,15,10,.55) 38%, rgba(35,15,10,.08) 68%), url('assets/img/hero-kyrgyzstan.jpg')">
-        <div class="hero-copy">
-          <h1>Большие дела<br><span class="hl">начинаются здесь</span></h1>
-          <p>Единая система документов для вашего удобства — акты, визы, кадровые приказы и личные задачи в одном окне.</p>
-          <div class="hero-badges">
-            <span>🛡️ Надёжно</span>
-            <span>⚡ Удобно</span>
-            <span>📈 Современно</span>
-          </div>
-        </div>
-      </div>
-
       <div class="bsp-content">
         <div class="bsp-grid-4">
           <div class="bsp-tool-card" onclick="openTool('akt')">
@@ -140,14 +129,6 @@
         </div>
 
         <div class="bsp-two-col">
-          <div class="bsp-panel">
-            <h3>💡 Как это работает</h3>
-            <p style="margin:0;color:var(--bsp-ink-soft);font-size:.88rem;line-height:1.6">
-              Выберите инструмент в меню слева или на карточке выше. Все программы открываются в этом же окне —
-              переключайтесь между ними в любой момент, не теряя введённые данные.
-            </p>
-          </div>
-
           <div class="bsp-panel bsp-mini-cal" id="mini-cal">
             <div class="mc-head">
               <span class="mc-title">📅 <span id="mc-title-text"></span></span>
