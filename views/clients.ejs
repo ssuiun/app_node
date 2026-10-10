@@ -253,7 +253,7 @@
   }
   function rowComp(c, i){
     return '<tr tabindex="0" role="button" data-comp="' + i + '"><td class="nm">' + esc(c.name) + (c.full_name && c.full_name !== c.name ? '<div class="sub">' + esc(c.full_name) + '</div>' : '') + '</td>' +
-      '<td>' + esc(c.inn) + '</td><td>' + esc(c.okpo) + '</td><td>' + esc(c.director) + '</td><td>' + esc(c.phone) + '</td><td>' + esc(c.address) + '</td>' +
+      '<td>' + esc(c.inn) + '</td><td>' + esc(c.okpo) + '</td><td>' + esc(c.director) + '</td><td>' + esc(c.address) + '</td>' +
       '<td><button type="button" class="chip" data-clients="' + c.id + '" title="Показать клиентов компании">' + c.clients_count + '</button></td>' +
       '<td>' + (c.files_count ? '📎 ' + c.files_count : '') + '</td></tr>';
   }
@@ -268,7 +268,7 @@
     var el = $('comp-grid'), emptyTxt = '<div class="empty">' + ($('comp-q').value.trim() ? 'Ничего не найдено' : 'Компаний пока нет. Нажмите «＋ Компания» или импортируйте из «Визы и договоры».') + '</div>';
     el.className = view === 'list' && comp.items.length ? 'list' : 'cgrid';
     el.innerHTML = !comp.items.length ? emptyTxt : view === 'list'
-      ? tableHtml(['Название','ИНН','ОКПО','Директор','Телефон','Адрес','Клиенты','Файлы'], comp.items.map(rowComp).join(''))
+      ? tableHtml(['Название','ИНН','ОКПО','Директор','Адрес','Клиенты','Файлы'], comp.items.map(rowComp).join(''))
       : comp.items.map(cardComp).join('');
     $('comp-more').hidden = comp.items.length >= comp.total;
   }

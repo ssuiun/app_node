@@ -25,6 +25,16 @@
     .tb:hover{color:var(--txt);background:var(--card)}
     .tb.on{color:#fff;background:linear-gradient(135deg,var(--acc),var(--acc2));box-shadow:var(--glow)}
     .badge{display:inline-block;background:rgba(255,255,255,.15);border-radius:20px;padding:0 5px;font-size:.72rem;margin-left:4px}
+    /* ОТЧЁТ */
+    .rep-filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.9rem;margin-bottom:1.1rem}
+    .rep-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.1rem;margin-bottom:1.1rem}
+    .rep-big{font-family:var(--heading-font);font-size:2.6rem;font-weight:800;line-height:1.1;color:var(--acc2);font-variant-numeric:tabular-nums}
+    .rep-sub{color:var(--txt2);font-size:.86rem;margin-top:.35rem}
+    .rep-table td.n,.rep-table th.n{text-align:right;font-variant-numeric:tabular-nums}
+    .rep-table td.n{font-weight:700}
+    .rep-table tr.tot td{border-top:2px solid var(--border2);font-weight:800;color:var(--acc2)}
+    .rep-table td:last-child,.rep-table th:last-child{position:static;box-shadow:none;background:transparent}
+    @media(max-width:760px){.rep-filters{grid-template-columns:1fr 1fr}.rep-cards{grid-template-columns:1fr}}
     /* LAYOUT */
     .wrap{max-width:1320px;margin:0 auto;padding:1.75rem}
     .panel{display:none;animation:fi .28s cubic-bezier(.23,1,.32,1)}
@@ -203,7 +213,8 @@
   <div class="hdr">
     <div class="logo"><div class="logo-i" id="logo-icon" aria-hidden="true"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" fill="none" stroke-width="7" stroke-linecap="round" style="width:62%;height:62%"><circle cx="50" cy="50" r="44"/><circle cx="50" cy="50" r="18"/><line x1="50" y1="6" x2="50" y2="94"/><line x1="6" y1="50" x2="94" y2="50"/><line x1="18.5" y1="18.5" x2="81.5" y2="81.5"/><line x1="81.5" y1="18.5" x2="18.5" y2="81.5"/></svg></div>Визовые документы</div>
     <nav class="tabs">
-      <button class="tb on" id="tab-oby" onclick="sw('oby')">📄 Обязательство и Ходатайство</button>
+      <button class="tb on" id="tab-rep" onclick="sw('rep')">📊 Отчёт</button>
+      <button class="tb" id="tab-oby" onclick="sw('oby')">📄 Обязательство и Ходатайство</button>
       <button class="tb" id="tab-zay" onclick="sw('zay')">📝 Заявление</button>
       <button class="tb" id="tab-trud" onclick="sw('trud')">📃 Трудовой договор</button>
       <button class="tb" id="tab-scan" onclick="sw('scan')">📷 Скан паспорта</button>
@@ -217,7 +228,39 @@
 <main class="wrap">
 
 <!-- ══ TAB 1: ОБЯЗАТЕЛЬСТВО ══ -->
-<div class="panel on" id="panel-oby">
+<!-- ══ TAB 0: ОТЧЁТ ══ -->
+<div class="panel on" id="panel-rep">
+  <div class="ptitle">
+    <h1>Отчёт</h1>
+    <p>Сводка по оформленным визам: считаются записи из вкладки «Визы» по дате подачи</p>
+  </div>
+  <div class="rep-filters">
+    <div class="fg"><label for="rep-period">Период</label><div class="sw"><select id="rep-period" onchange="renderReport()">
+      <option value="today">Сегодня</option><option value="week">Эта неделя</option><option value="month" selected>Этот месяц</option>
+      <option value="prevmonth">Прошлый месяц</option><option value="year">Этот год</option><option value="all">Всё время</option></select></div></div>
+    <div class="fg"><label for="rep-status">Статус</label><div class="sw"><select id="rep-status" onchange="renderReport()"></select></div></div>
+    <div class="fg"><label for="rep-type">Тип визы</label><div class="sw"><select id="rep-type" onchange="renderReport()"></select></div></div>
+    <div class="fg"><label for="rep-exec">Сотрудник</label><div class="sw"><select id="rep-exec" onchange="renderReport()"></select></div></div>
+  </div>
+  <div class="rep-cards">
+    <div class="card">
+      <div class="ct">Сегодня</div>
+      <div class="rep-big" id="rep-date"></div>
+      <div class="rep-sub" id="rep-date-sub"></div>
+    </div>
+    <div class="card">
+      <div class="ct" id="rep-total-title">Оформлено виз</div>
+      <div class="rep-big" id="rep-total">0</div>
+      <div class="rep-sub" id="rep-total-sub"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ct">Кто сколько оформил</div>
+    <div class="vtable-wrap"><table class="vtable rep-table" id="rep-table"><thead></thead><tbody></tbody></table></div>
+  </div>
+</div>
+
+<div class="panel" id="panel-oby">
   <div class="ptitle">
     <h1>Обязательство и Ходатайство</h1>
     <p>Загрузите шаблон Word-файла, заполните данные и скачайте готовый документ</p>
@@ -638,7 +681,7 @@ function pad(n) { return String(n).padStart(2,'0'); }
 
 /* ═══ TABS ═══ */
 function sw(t) {
-  ['oby','zay','trud','scan','comp','viz'].forEach(x => {
+  ['rep','oby','zay','trud','scan','comp','viz'].forEach(x => {
     document.getElementById('panel-'+x).classList.remove('on');
     document.getElementById('tab-'+x).classList.remove('on');
   });
@@ -646,6 +689,7 @@ function sw(t) {
   document.getElementById('tab-'+t).classList.add('on');
   if (t==='comp') renderComp();
   if (t==='viz') renderVisas();
+  if (t==='rep') renderReport();
 }
 
 /* ═══ SELECTS ═══ */
@@ -822,7 +866,61 @@ function delVisa(id) {
   toast('Запись удалена локально', 'ok');
 }
 
+/* ═══ ОТЧЁТ ═══ */
+const RU_MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const RU_MONTHS_GEN = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+const RU_WEEKDAYS = ['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
+let repReady = false;
+function isoOf(d) { return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+// границы периодов (включительно, строки YYYY-MM-DD); неделя — с понедельника
+function repRange(kind, now) {
+  const y = now.getFullYear(), m = now.getMonth();
+  if (kind === 'today') return [isoOf(now), isoOf(now)];
+  if (kind === 'week') { const mon = new Date(now); mon.setDate(now.getDate() - ((now.getDay() + 6) % 7)); const sun = new Date(mon); sun.setDate(mon.getDate() + 6); return [isoOf(mon), isoOf(sun)]; }
+  if (kind === 'month') return [isoOf(new Date(y, m, 1)), isoOf(new Date(y, m + 1, 0))];
+  if (kind === 'prevmonth') return [isoOf(new Date(y, m - 1, 1)), isoOf(new Date(y, m, 0))];
+  if (kind === 'year') return [y + '-01-01', y + '-12-31'];
+  return ['0000-01-01', '9999-12-31'];
+}
+function repInit() {
+  repReady = true;
+  document.getElementById('rep-status').innerHTML = '<option value="">Все</option>' + VISA_STATUSES.map(s => `<option value="${esc(s.v)}">${esc(s.v)}</option>`).join('');
+  document.getElementById('rep-type').innerHTML = '<option value="">Все</option>' + Object.keys(VISA_TYPES).map(t => `<option value="${esc(t)}">${esc(t)}</option>`).join('');
+  document.getElementById('rep-exec').innerHTML = '<option value="">Все</option>' + EXECUTORS.map(e => `<option value="${esc(e)}">${esc(e)}</option>`).join('');
+}
+function renderReport() {
+  if (!document.getElementById('rep-table')) return;
+  if (!repReady) repInit();
+  const now = new Date();
+  const fStatus = document.getElementById('rep-status').value, fType = document.getElementById('rep-type').value, fExec = document.getElementById('rep-exec').value;
+  const period = document.getElementById('rep-period').value;
+  const recs = VDB.filter(r => r.submit && (!fStatus || r.status === fStatus) && (!fType || r.type === fType) && (!fExec || r.exec === fExec));
+  const count = (list, kind) => { const [a, b] = repRange(kind, now); return list.filter(r => r.submit >= a && r.submit <= b).length; };
+
+  document.getElementById('rep-date').textContent = `${now.getDate()} ${RU_MONTHS_GEN[now.getMonth()]} ${now.getFullYear()}`;
+  document.getElementById('rep-date-sub').textContent = `${RU_WEEKDAYS[now.getDay()]} · отчётный месяц: ${RU_MONTHS[now.getMonth()]} ${now.getFullYear()}`;
+
+  const titles = { today: 'за сегодня', week: 'за эту неделю', month: `за ${RU_MONTHS[now.getMonth()].toLowerCase()} ${now.getFullYear()}`,
+    prevmonth: 'за прошлый месяц', year: `за ${now.getFullYear()} год`, all: 'за всё время' };
+  const total = count(recs, period);
+  document.getElementById('rep-total-title').textContent = 'Оформлено виз ' + titles[period];
+  document.getElementById('rep-total').textContent = total;
+  document.getElementById('rep-total-sub').textContent = `сегодня: ${count(recs, 'today')} · за неделю: ${count(recs, 'week')} · за месяц: ${count(recs, 'month')}`;
+
+  // сотрудники: из списка исполнителей + все, кто встречается в записях
+  const names = EXECUTORS.slice();
+  recs.forEach(r => { const e = r.exec || 'Без исполнителя'; if (!names.includes(e)) names.push(e); });
+  let rows = names.map(n => { const mine = recs.filter(r => (r.exec || 'Без исполнителя') === n); return { n, d: count(mine, 'today'), w: count(mine, 'week'), m: count(mine, 'month') }; });
+  if (fExec) rows = rows.filter(r => r.n === fExec);
+  rows.sort((a, b) => b.m - a.m || b.w - a.w || b.d - a.d || a.n.localeCompare(b.n, 'ru'));
+  const sum = k => rows.reduce((t, r) => t + r[k], 0);
+  document.querySelector('#rep-table thead').innerHTML = '<tr><th>Сотрудник</th><th class="n">Сегодня</th><th class="n">За неделю</th><th class="n">За месяц</th></tr>';
+  document.querySelector('#rep-table tbody').innerHTML = rows.map(r => `<tr><td>${esc(r.n)}</td><td class="n">${r.d}</td><td class="n">${r.w}</td><td class="n">${r.m}</td></tr>`).join('') +
+    (rows.length > 1 ? `<tr class="tot"><td>Всего</td><td class="n">${sum('d')}</td><td class="n">${sum('w')}</td><td class="n">${sum('m')}</td></tr>` : '');
+}
+
 function renderVisas() {
+  renderReport();
   document.getElementById('viz-count').textContent = VDB.length;
   const thead = document.querySelector('#viz-table thead');
   const tbody = document.querySelector('#viz-table tbody');
