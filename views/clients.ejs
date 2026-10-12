@@ -71,6 +71,7 @@
   .flist{margin-top:.5rem;border:1px solid var(--border);border-radius:var(--rs);background:var(--bg2)}
   .frow{display:flex;align-items:center;gap:.5rem;padding:.45rem .7rem;border-top:1px solid var(--border);font-size:.82rem}
   .frow:first-child{border-top:none}
+  .frow{min-height:64px}
   .frow .fn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .hint{color:var(--muted);font-size:.76rem;margin-top:.3rem}
   .card{background:var(--card);border:1px solid var(--border);border-top:2px solid var(--acc2);border-radius:var(--r);padding:1.2rem}
@@ -102,6 +103,7 @@
   @media(max-width:560px){.row{flex-direction:column;gap:0}.wrap{padding:1rem}}
 </style>
 <script src="/app-theme.js" data-key="cl_theme"></script>
+<script src="/file-preview.js"></script>
 </head>
 <body>
 <header id="app-header">
@@ -398,14 +400,16 @@
       render: function(){
         $(p + '-files-hint').textContent = owner ? 'До ' + maxFileMb + ' МБ на файл. Хранятся без срока.' : 'Файлы загрузятся после сохранения карточки. До ' + maxFileMb + ' МБ на файл.';
         if (!owner) {
-          $(p + '-files').innerHTML = pending.length ? pending.map(function(f, i){ return '<div class="frow"><span class="fn">📎 ' + esc(f.name) + '</span><span class="sub">' + formatSize(f.size) + '</span><button type="button" class="btn danger sm" data-unpend="' + i + '" title="Убрать">✕</button></div>'; }).join('') : '<div class="frow"><span class="sub">Файлов нет</span></div>';
+          $(p + '-files').innerHTML = pending.length ? pending.map(function(f, i){ return '<div class="frow"><span class="fp-slot"></span><span class="fn" title="' + esc(f.name) + '">' + esc(f.name) + '</span><span class="sub">' + formatSize(f.size) + '</span><button type="button" class="btn danger sm" data-unpend="' + i + '" title="Убрать">✕</button></div>'; }).join('') : '<div class="frow"><span class="sub">Файлов нет</span></div>';
+          Array.prototype.forEach.call($(p + '-files').querySelectorAll('.fp-slot'), function(el, i){ FilePreview.thumb(el, pending[i], pending[i].name); });
           return Promise.resolve();
         }
         return api('GET', '/api/clients/' + kind + '/' + owner.id + '/files').then(function(list){
           $(p + '-files').innerHTML = list.length ? list.map(function(f){
-            return '<div class="frow"><span class="fn" title="' + esc(f.name) + '">📎 ' + esc(f.name) + '</span><span class="sub">' + formatSize(f.size) + '</span>' +
+            return '<div class="frow"><span class="fp-slot"></span><span class="fn" title="' + esc(f.name) + '">' + esc(f.name) + '</span><span class="sub">' + formatSize(f.size) + '</span>' +
               '<a class="btn ghost sm" href="/api/clients/files/' + f.id + '" title="Скачать">⬇</a><button type="button" class="btn danger sm" data-fdel="' + f.id + '" title="Удалить файл">🗑</button></div>';
           }).join('') : '<div class="frow"><span class="sub">Файлов нет</span></div>';
+          Array.prototype.forEach.call($(p + '-files').querySelectorAll('.fp-slot'), function(el, i){ var u = '/api/clients/files/' + list[i].id; FilePreview.thumb(el, u, list[i].name, { href: u }); });
         });
       },
       // после создания карточки догружаем выбранные заранее файлы; возвращает список ошибок

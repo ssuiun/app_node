@@ -105,6 +105,7 @@
   .flist{margin-top:.5rem;border:1px solid var(--border);border-radius:var(--rs);background:var(--bg2)}
   .frow{display:flex;align-items:center;gap:.5rem;padding:.45rem .7rem;border-top:1px solid var(--border);font-size:.82rem}
   .frow:first-child{border-top:none}
+  .frow{min-height:64px}
   .frow .fn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .frow .left{color:var(--muted);font-size:.72rem;white-space:nowrap}
   .frow .left.soon{color:var(--warn);font-weight:700}
@@ -118,6 +119,7 @@
   .toast.on{opacity:1}
 </style>
 <script src="/app-theme.js" data-key="out_theme"></script>
+<script src="/file-preview.js"></script>
 </head>
 <body>
 <header id="app-header">
@@ -216,6 +218,7 @@
     </div>
     <label for="f-files">Файлы письма (необязательно)</label>
     <input type="file" id="f-files" multiple />
+    <div class="fp-strip" id="f-files-prev"></div>
     <div class="hint" id="f-files-hint"></div>
     <div class="err" id="take-err" role="alert"></div>
     <div class="dlg-actions"><button class="btn ghost" id="new-cancel" type="button">Отмена</button><button class="btn" id="btn-take" type="button">Получить номер</button></div>
@@ -494,10 +497,11 @@
     if (companyId) $('f-company').value = String(companyId);
     $('new-form').hidden = false; $('new-done').hidden = true; $('take-err').textContent = '';
     $('f-manual').checked = false; $('f-manual-box').hidden = true; $('f-seq').value = '';
-    $('f-date').value = todayISO(); $('f-files').value = '';
+    $('f-date').value = todayISO(); $('f-files').value = ''; $('f-files-prev').innerHTML = '';
     showNext(); $('dlg-new').showModal(); $('f-recipient').focus();
   }
   $('f-manual').addEventListener('change', function(){ $('f-manual-box').hidden = !this.checked; if (this.checked) $('f-seq').focus(); showNext(); });
+  $('f-files').addEventListener('change', function(){ FilePreview.strip($('f-files-prev'), this.files); });
   $('btn-new').onclick = function(){ openNew(null); };
   $('new-cancel').onclick = $('done-close').onclick = function(){ $('dlg-new').close(); };
   $('done-again').onclick = function(){ ['f-recipient','f-subject'].forEach(function(id){ $(id).value=''; }); openNew(null); };
@@ -538,12 +542,13 @@
     return api('GET', '/api/outgoing/letters/' + editing.id + '/files').then(function(list){
       $('ed-files').innerHTML = list.length ? list.map(function(f){
         var soon = f.days_left <= STATS.warn_days;
-        return '<div class="frow"><span class="fn" title="' + esc(f.name) + '">📎 ' + esc(f.name) + '</span><span class="sub">' + size(f.size) + '</span>' +
+        return '<div class="frow"><span class="fp-slot"></span><span class="fn" title="' + esc(f.name) + '">' + esc(f.name) + '</span><span class="sub">' + size(f.size) + '</span>' +
           '<span class="left' + (soon ? ' soon' : '') + '">' + (f.days_left > 0 ? 'ещё ' + f.days_left + ' дн.' : 'удалится сегодня') + '</span>' +
           '<a class="btn ghost sm" href="/api/outgoing/files/' + f.id + '" title="Скачать">⬇</a>' +
           '<button class="btn ghost sm" data-ext="' + f.id + '" title="Продлить срок хранения">⏳</button>' +
           '<button class="btn danger sm" data-fdel="' + f.id + '" title="Удалить файл">🗑</button></div>';
       }).join('') : '<div class="frow"><span class="sub">Файлов нет</span></div>';
+      Array.prototype.forEach.call($('ed-files').querySelectorAll('.fp-slot'), function(el, i){ var u = '/api/outgoing/files/' + list[i].id; FilePreview.thumb(el, u, list[i].name, { href: u }); });
     });
   }
   function openEdit(l){
