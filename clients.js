@@ -132,6 +132,12 @@ function createClientsRouter(pool) {
     res.json(rows);
   }));
 
+  router.get('/companies/:id(\\d+)', wrap(async (req, res) => {
+    const r = await pool.query(`${COMPANY_SELECT} WHERE c.id = $1`, [Number(req.params.id)]);
+    if (!r.rows[0]) return res.status(404).json({ error: 'Компания не найдена' });
+    res.json(r.rows[0]);
+  }));
+
   router.post('/companies', wrap(async (req, res) => {
     const data = pick(req.body || {}, COMPANY_FIELDS);
     if (!data.name) return res.status(400).json({ error: 'Укажите название компании' });
@@ -229,6 +235,12 @@ function createClientsRouter(pool) {
     const ok = id >= 1 && (await pool.query('SELECT 1 FROM cl_companies WHERE id = $1', [id])).rowCount > 0;
     return ok ? { value: id } : { error: 'Компания не найдена' };
   }
+
+  router.get('/clients/:id(\\d+)', wrap(async (req, res) => {
+    const r = await pool.query(`${CLIENT_SELECT} WHERE k.id = $1`, [Number(req.params.id)]);
+    if (!r.rows[0]) return res.status(404).json({ error: 'Клиент не найден' });
+    res.json(r.rows[0]);
+  }));
 
   router.post('/clients', wrap(async (req, res) => {
     const body = req.body || {};

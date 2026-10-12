@@ -117,3 +117,12 @@ test('файлы к компаниям и клиентам: загрузка, с
   await call('DELETE', `/clients/${k.id}`);
   assert.equal((await fetch(`${base}/files/${f3.body.id}`)).status, 404);
 });
+
+test('карточка одной записи: GET по id', opts, async () => {
+  const c = (await call('POST', '/companies', { name: 'Одиночная' })).body;
+  const k = (await call('POST', '/clients', { name: 'Одиночный', company_id: c.id })).body;
+  assert.equal((await call('GET', `/companies/${c.id}`)).body.clients_count, 1);
+  assert.equal((await call('GET', `/clients/${k.id}`)).body.company_name, 'Одиночная');
+  assert.equal((await call('GET', '/companies/99999')).status, 404);
+  assert.equal((await call('GET', '/clients/99999')).status, 404);
+});
