@@ -2,6 +2,9 @@ const express = require('express');
 const path = require('path');
 const { Pool } = require('pg');
 const { createProxyMiddleware } = require('http-proxy-middleware');
+const { createOutgoingRouter, initOutgoingSchema, purgeExpiredFiles } = require('./outgoing');
+const { createClientsRouter, initClientsSchema } = require('./clients');
+const { createVisasRouter, initVisasSchema, migrateVisasFromStorage } = require('./visas');
 
 const PORT = Number(process.env.PORT || 3000);
 const HOST = '0.0.0.0';
@@ -24,7 +27,11 @@ async function initDb() {
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `);
-  console.log('PostgreSQL connected and app_storage is ready.');
+  await initOutgoingSchema(pool);
+  await initClientsSchema(pool);
+  await initVisasSchema(pool);
+  await migrateVisasFromStorage(pool);
+  console.log('PostgreSQL connected, app_storage and outgoing-letters, clients and visas tables are ready.');
 }
 
 const app = express();
@@ -61,6 +68,21 @@ if (STIRLING_URL) {
   }));
 } else {
   console.warn('STIRLING_URL is not set. /pdf is disabled.');
+}
+
+// ---------- Agentation (визуальные комментарии для ИИ-агента) ----------
+// Только по явному включению: AGENTATION=1. В обычном продакшене скрипт не подключается.
+if (process.env.AGENTATION === '1') {
+  const TAG = '<script src="/vendor/agentation.js" defer></script>';
+  app.use((req, res, next) => {
+    const render = res.render.bind(res);
+    res.render = (view, options) => render(view, options, (err, html) => {
+      if (err) return next(err);
+      res.send(html.replace(/<\/body>/i, TAG + '</body>'));
+    });
+    next();
+  });
+  console.log('Agentation toolbar is enabled.');
 }
 
 app.use(express.json({ limit: MAX_BODY }));
@@ -143,6 +165,15 @@ app.delete('/api/storage', async (req, res) => {
   }
 });
 
+// ---------- /api/outgoing (учёт исходящих номеров) ----------
+app.use('/api/outgoing', createOutgoingRouter(pool));
+
+// ---------- /api/visas (учёт виз: одна строка на визу) ----------
+app.use('/api/visas', createVisasRouter(pool));
+
+// ---------- /api/clients (база клиентов: компании и клиенты) ----------
+app.use('/api/clients', createClientsRouter(pool));
+
 // ---------- Page routes (EJS views, same public URLs as before) ----------
 
 app.get('/', (req, res) => res.render('index'));
@@ -150,6 +181,8 @@ app.get('/akt.html', (req, res) => res.render('akt'));
 app.get('/visa.html', (req, res) => res.render('visa'));
 app.get('/kadr.html', (req, res) => res.render('kadr'));
 app.get('/marginalia.html', (req, res) => res.render('marginalia'));
+app.get('/outgoing.html', (req, res) => res.render('outgoing'));
+app.get('/clients.html', (req, res) => res.render('clients'));
 
 app.use((req, res) => {
   res.status(404).type('text/plain; charset=utf-8').send('Not found');
@@ -180,6 +213,12 @@ function listenOnPort(port) {
 
 initDb()
   .then(() => {
+    if (pool) {
+      // Раз в 6 часов удаляем файлы исходящих писем, у которых истёк срок хранения.
+      const purge = () => purgeExpiredFiles(pool).catch((err) => console.error('Purge failed:', err.message));
+      purge();
+      setInterval(purge, 6 * 60 * 60 * 1000).unref();
+    }
     listenOnPort(PORT);
   })
   .catch(err => {
